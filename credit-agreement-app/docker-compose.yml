@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY-}
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - net
+    x-develop:
+      watch:
+        - action: rebuild
+          path: ./backend
+    ports:
+      - 8080:8000
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL-http://localhost:8080}
+    networks:
+      - net
+    x-develop:
+      watch:
+        - action: rebuild
+          path: ./frontend
+    ports:
+      - 3001:5173
+networks:
+  net:

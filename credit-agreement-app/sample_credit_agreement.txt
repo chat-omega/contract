@@ -1,0 +1,100 @@
+CREDIT AGREEMENT
+
+This Credit Agreement (this "Agreement") is entered into as of January 15, 2024, by and between ABC Corporation, a Delaware corporation ("Borrower"), and XYZ Bank, National Association ("Lender").
+
+RECITALS
+
+WHEREAS, Borrower has requested that Lender provide a credit facility to Borrower; and
+WHEREAS, Lender is willing to provide such credit facility on the terms and conditions set forth herein.
+
+NOW, THEREFORE, in consideration of the mutual covenants and agreements herein contained, the parties hereto agree as follows:
+
+ARTICLE I
+THE CREDIT
+
+Section 1.1 Commitment. Subject to the terms and conditions set forth herein, Lender agrees to make a term loan to Borrower in the principal amount of $5,000,000 (Five Million Dollars) (the "Loan").
+
+Section 1.2 Interest Rate. The Loan shall bear interest at a rate equal to 7.5% per annum (the "Interest Rate"). Interest shall be calculated on the basis of a 365-day year for the actual number of days elapsed.
+
+Section 1.3 Interest Payment Dates. Accrued interest on the Loan shall be payable monthly in arrears on the first day of each calendar month, commencing on February 1, 2024.
+
+Section 1.4 Principal Payment. The entire principal amount of the Loan shall be due and payable on January 15, 2029 (the "Maturity Date").
+
+Section 1.5 Prepayment. Borrower may prepay the Loan in whole or in part at any time without penalty or premium. Any partial prepayment shall be applied to the principal balance of the Loan.
+
+ARTICLE II
+CONDITIONS PRECEDENT
+
+Section 2.1 Conditions to Loan. The obligation of Lender to make the Loan is subject to the satisfaction of the following conditions:
+(a) Receipt of duly executed copies of this Agreement;
+(b) Receipt of a certificate of good standing for Borrower from the Delaware Secretary of State;
+(c) Receipt of corporate resolutions authorizing the execution of this Agreement;
+(d) No material adverse change in the financial condition of Borrower.
+
+ARTICLE III
+REPRESENTATIONS AND WARRANTIES
+
+Section 3.1 Borrower Representations. Borrower represents and warrants that:
+(a) It is duly organized and validly existing under the laws of Delaware;
+(b) It has full corporate power and authority to execute this Agreement;
+(c) The execution of this Agreement has been duly authorized;
+(d) This Agreement constitutes a legal, valid, and binding obligation of Borrower.
+
+ARTICLE IV
+COVENANTS
+
+Section 4.1 Financial Covenants. Borrower covenants and agrees that:
+(a) It will maintain a minimum debt service coverage ratio of 1.25:1.00;
+(b) It will maintain a maximum debt-to-equity ratio of 2.00:1.00;
+(c) It will maintain minimum working capital of $1,000,000.
+
+Section 4.2 Reporting Requirements. Borrower shall provide to Lender:
+(a) Quarterly financial statements within 45 days after the end of each fiscal quarter;
+(b) Annual audited financial statements within 120 days after the end of each fiscal year;
+(c) Such other financial information as Lender may reasonably request.
+
+ARTICLE V
+EVENTS OF DEFAULT
+
+Section 5.1 Events of Default. The occurrence of any of the following shall constitute an Event of Default:
+(a) Failure to pay principal or interest when due;
+(b) Breach of any financial covenant set forth in Section 4.1;
+(c) Any representation or warranty proving to be false or misleading in any material respect;
+(d) Bankruptcy or insolvency of Borrower;
+(e) Failure to pay any other debt exceeding $500,000 when due.
+
+Section 5.2 Remedies. Upon the occurrence of an Event of Default, Lender may:
+(a) Declare the entire unpaid principal balance and accrued interest immediately due and payable;
+(b) Exercise all rights and remedies available at law or in equity.
+
+ARTICLE VI
+COLLATERAL
+
+Section 6.1 Security Interest. As security for the Loan, Borrower grants to Lender a first priority security interest in all of Borrower's accounts receivable, inventory, and equipment, whether now owned or hereafter acquired.
+
+Section 6.2 Perfection. Borrower shall execute and deliver to Lender all documents necessary to perfect Lender's security interest, including UCC financing statements.
+
+ARTICLE VII
+MISCELLANEOUS
+
+Section 7.1 Governing Law. This Agreement shall be governed by and construed in accordance with the laws of the State of New York.
+
+Section 7.2 Late Payment Fee. If any payment is more than 10 days late, Borrower shall pay a late fee equal to 5% of the overdue amount.
+
+Section 7.3 Entire Agreement. This Agreement constitutes the entire agreement between the parties and supersedes all prior agreements and understandings.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+
+BORROWER:
+ABC Corporation
+
+By: _______________________
+Name: John Smith
+Title: Chief Financial Officer
+
+LENDER:
+XYZ Bank, National Association
+
+By: _______________________
+Name: Jane Doe
+Title: Senior Vice President
