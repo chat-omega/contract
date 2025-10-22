@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Field Loading Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .fail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Field Loading Test Suite</h1>
+        <p>This page tests the /api/fields endpoint and field loading functionality.</p>
+
+        <div id="test-results"></div>
+
+        <button onclick="runTests()">Run All Tests</button>
+        <button onclick="testAPIEndpoint()">Test API Endpoint</button>
+        <button onclick="testFieldCount()">Test Field Count</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <script>
+        const results = document.getElementById('test-results');
+
+        function addResult(message, status) {
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            results.innerHTML = '';
+        }
+
+        async function testAPIEndpoint() {
+            addResult('Testing /api/fields endpoint...', 'info');
+
+            try {
+                const response = await fetch('/api/fields?limit=10');
+
+                if (!response.ok) {
+                    addResult(`❌ API returned status ${response.status}`, 'fail');
+                    return false;
+                }
+
+                const data = await response.json();
+
+                if (!data.fields) {
+                    addResult('❌ API response missing "fields" property', 'fail');
+                    return false;
+                }
+
+                if (!data.total) {
+                    addResult('❌ API response missing "total" property', 'fail');
+                    return false;
+                }
+
+                addResult(`✅ API endpoint working - returned ${data.fields.length} fields`, 'pass');
+                addResult(`📊 Total fields in database: ${data.total}`, 'info');
+
+                // Show sample field
+                if (data.fields.length > 0) {
+                    const sample = data.fields[0];
+                    addResult(`<strong>Sample Field:</strong><pre>${JSON.stringify(sample, null, 2)}</pre>`, 'info');
+                }
+
+                return true;
+            } catch (error) {
+                addResult(`❌ Error fetching from API: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testFieldCount() {
+            addResult('Testing total field count...', 'info');
+
+            try {
+                const response = await fetch('/api/fields');
+                const data = await response.json();
+
+                const expectedCount = 1354;
+                const actualCount = data.total;
+
+                if (actualCount === expectedCount) {
+                    addResult(`✅ Field count correct: ${actualCount} fields`, 'pass');
+                    return true;
+                } else {
+                    addResult(`⚠️ Field count mismatch: expected ${expectedCount}, got ${actualCount}`, 'fail');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ Error testing field count: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testFieldStructure() {
+            addResult('Testing field data structure...', 'info');
+
+            try {
+                const response = await fetch('/api/fields?limit=1');
+                const data = await response.json();
+
+                if (data.fields.length === 0) {
+                    addResult('❌ No fields returned to test structure', 'fail');
+                    return false;
+                }
+
+                const field = data.fields[0];
+                const requiredProps = ['field_id', 'name', 'description', 'type'];
+                const missingProps = requiredProps.filter(prop => !field.hasOwnProperty(prop));
+
+                if (missingProps.length > 0) {
+                    addResult(`❌ Field missing properties: ${missingProps.join(', ')}`, 'fail');
+                    return false;
+                }
+
+                addResult('✅ Field structure correct', 'pass');
+                return true;
+            } catch (error) {
+                addResult(`❌ Error testing field structure: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function runTests() {
+            clearResults();
+            addResult('<h2>Running Test Suite...</h2>', 'info');
+
+            let passed = 0;
+            let failed = 0;
+
+            const tests = [
+                { name: 'API Endpoint', fn: testAPIEndpoint },
+                { name: 'Field Count', fn: testFieldCount },
+                { name: 'Field Structure', fn: testFieldStructure }
+            ];
+
+            for (const test of tests) {
+                const result = await test.fn();
+                if (result) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+            }
+
+            addResult(`<h2>Test Results: ${passed} passed, ${failed} failed</h2>`,
+                     failed === 0 ? 'pass' : 'fail');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

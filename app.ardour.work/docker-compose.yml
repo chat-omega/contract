@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  pe-dashboard:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: pe-dashboard-openbb:latest
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_RESEARCH_API_URL=http://research-service:8000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  research-service:
+    build:
+      context: ./research-service
+      dockerfile: Dockerfile
+    image: research-service:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-ardour-research}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4-turbo-preview}
+      - DEFAULT_SEARCH_PROVIDER=${DEFAULT_SEARCH_PROVIDER:-tavily}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3002,http://pe-dashboard:3000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  node_modules:

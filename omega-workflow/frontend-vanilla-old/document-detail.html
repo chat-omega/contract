@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Detail - OMEGA</title>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/document-detail.css">
+    
+    <!-- PDF.js v5.4 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.296/pdf.min.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0IiBmaWxsPSJub25lIj4KICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTY0IDMyQzY0IDE0LjMyNjkgNDkuNjczMSAxLjY0MzQyZS0wNiAzMiAyLjQxNTkzZS0wNkMxNC4zMjY5IDMuMTg4NDVlLTA2IC0yLjE3MTI4ZS0wNiAxNC4zMjY5IC0xLjM5ODc2ZS0wNiAzMkMtNi4yNjI0OGUtMDcgNDkuNjczMSAxNC4zMjY5IDY0IDMyIDY0QzQ5LjY3MzEgNjQgNjQgNDkuNjczMSA2NCAzMlpNNTIuNTcxNCAzMkM1Mi41NzE0IDIwLjYzODcgNDMuMzYxMyAxMS40Mjg2IDMyIDExLjQyODZDMjAuNjM4NyAxMS40Mjg2IDExLjQyODYgMjAuNjM4NyAxMS40Mjg2IDMyQzExLjQyODYgNDMuMzYxMyAyMC42Mzg3IDUyLjU3MTQgMzIgNTIuNTcxNEM0My4zNjEzIDUyLjU3MTQgNTIuNTcxNCA0My4zNjEzIDUyLjU3MTQgMzJaIiBmaWxsPSIjRkVDNjJDIi8+Cjwvc3ZnPgo=">
+</head>
+<body>
+    <div id="document-detail-app">
+        <!-- Left Sidebar: Workflows and Extracted Terms -->
+        <div class="document-sidebar">
+            <!-- Back Navigation -->
+            <div class="sidebar-header">
+                <button id="back-button" class="back-button">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+                <h2 class="document-title" id="document-title">Credit Agreement</h2>
+            </div>
+
+            <!-- Workflows Section -->
+            <div class="workflows-section">
+                <div class="section-header" id="workflows-header">
+                    <h3>Workflows</h3>
+                </div>
+                <div class="section-content" id="workflows-content">
+                    <div class="document-type-chips" id="document-type-chips">
+                        <!-- Document type chips will be populated dynamically from API data -->
+                    </div>
+
+                    <div class="workflow-info">
+                        <div class="workflow-name">
+                            <label>Workflow:</label>
+                            <select class="workflow-select">
+                                <option>credit agreement</option>
+                                <option>general contract</option>
+                                <option>loan agreement</option>
+                            </select>
+                        </div>
+                        
+                        <div class="reviewers-section">
+                            <div class="reviewers-header">
+                                <label>Reviewers:</label>
+                                <button class="mark-reviewed-btn">Mark Reviewed</button>
+                            </div>
+                            <p class="no-reviewers">No reviewers assigned.</p>
+                        </div>
+                        
+                        <div class="workflow-actions">
+                            <button class="btn-edit-workflow">
+                                <span class="material-icons">edit</span>
+                                Edit Workflow
+                            </button>
+                            <button class="btn-collapse-all">Collapse All</button>
+                            <button class="btn-expand-all">Expand All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extracted Terms Section -->
+            <div id="extracted-terms-container" class="extracted-terms-section">
+                <div class="section-header">
+                    <h3>Extracted Terms</h3>
+                </div>
+
+                <!-- Dynamic content will be rendered here -->
+                <div id="terms-loading" class="empty-state">Loading extraction results...</div>
+            </div>
+        </div>
+
+        <!-- Right Side: Document Viewer -->
+        <div class="document-viewer">
+            <!-- Document Header -->
+            <div class="document-header">
+                <div class="document-info">
+                    <div class="document-timestamp">7/21/25, 4:47 PM</div>
+                    <div class="document-filename">EX-10.1 2 exhibit101termloanexecutio.htm EX-10.1</div>
+                    <div class="document-label">Document</div>
+                </div>
+                <button id="close-document" class="close-button">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <!-- Document Controls -->
+            <div class="document-controls">
+                <button id="btn-search" class="btn-search">
+                    <span class="material-icons">search</span>
+                    Find in Document
+                </button>
+                <button class="btn-export">
+                    <span class="material-icons">download</span>
+                    Export
+                </button>
+            </div>
+
+            <!-- PDF Viewer Container -->
+            <div class="pdf-viewer-container">
+                <div id="pdf-viewer" class="pdf-viewer">
+                    <div id="pdf-loading" class="pdf-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading document...</p>
+                    </div>
+                    <div id="pdf-scroll-container" class="pdf-scroll-container"></div>
+                </div>
+                
+                <!-- PDF Controls -->
+                <div class="pdf-controls">
+                    <button id="prev-page" class="pdf-control-btn">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <div class="page-input-container">
+                        <span>Page </span>
+                        <input type="number" id="page-input" class="page-input" min="1" value="1">
+                        <span id="page-total" class="page-total"> of 165</span>
+                    </div>
+                    <button id="next-page" class="pdf-control-btn">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                    <div class="zoom-controls">
+                        <button id="zoom-out" class="pdf-control-btn">
+                            <span class="material-icons">zoom_out</span>
+                        </button>
+                        <span id="zoom-level" class="zoom-level">100%</span>
+                        <button id="zoom-in" class="pdf-control-btn">
+                            <span class="material-icons">zoom_in</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="search-modal" style="display: none;">
+        <div class="search-modal-content">
+            <div class="search-header">
+                <h3>Find in Document</h3>
+                <button id="close-search" class="close-search-btn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="search-body">
+                <div class="search-input-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="Enter text to search...">
+                    <div class="search-results-info">
+                        <span id="search-results-count">0 results</span>
+                    </div>
+                </div>
+                <div class="search-navigation">
+                    <button id="search-prev" class="search-nav-btn" disabled>
+                        <span class="material-icons">keyboard_arrow_up</span>
+                        Previous
+                    </button>
+                    <button id="search-next" class="search-nav-btn" disabled>
+                        <span class="material-icons">keyboard_arrow_down</span>
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="js/document-detail.js?v=20251021-bbox-fix"></script>
+</body>
+</html>

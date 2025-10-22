@@ -1,0 +1,210 @@
+{
+  "summary": {
+    "total_tests": 26,
+    "passed": 11,
+    "failed": 15,
+    "pass_rate": 42.30769230769231,
+    "timestamp": "2025-10-18T16:44:35.872413"
+  },
+  "results": [
+    {
+      "test": "health_check",
+      "passed": true,
+      "message": "Server is healthy: {'status': 'healthy', 'service': 'workflow-api-fastapi', 'version': '2.0.0'}",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.368141"
+    },
+    {
+      "test": "register_validation_Short username",
+      "passed": false,
+      "message": "Should have failed with 400, got 422",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.370940"
+    },
+    {
+      "test": "register_validation_Invalid email",
+      "passed": false,
+      "message": "Should have failed with 400, got 422",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.377744"
+    },
+    {
+      "test": "register_validation_Short password",
+      "passed": false,
+      "message": "Should have failed with 400, got 422",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.380294"
+    },
+    {
+      "test": "register_validation_Missing fields",
+      "passed": false,
+      "message": "Should have failed with 400, got 422",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.382927"
+    },
+    {
+      "test": "register_user",
+      "passed": false,
+      "message": "Registration failed with status 200: {\"success\":true,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMiIsImV4cCI6MTc2MDg5MjI3NX0.pZRx9enBLGwsc-gtcxdJ2P44fWUAnfw1JrWZ0hTnH1g\",\"user\":{\"id\":12,\"username\":\"testuser_1760805875\",\"email\":\"testuser_1760805875@test.com\",\"created_at\":\"2025-10-18 16:44:35\"},\"message\":\"Registration successful\"}",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.474815"
+    },
+    {
+      "test": "login_invalid_nonexistent",
+      "passed": true,
+      "message": "Correctly rejected invalid credentials for nonexistent",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.480697"
+    },
+    {
+      "test": "login_invalid_admin",
+      "passed": true,
+      "message": "Correctly rejected invalid credentials for admin",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.556140"
+    },
+    {
+      "test": "login",
+      "passed": true,
+      "message": "Login successful for testuser_1760805875",
+      "details": {
+        "user": {
+          "id": 12,
+          "username": "testuser_1760805875",
+          "email": "testuser_1760805875@test.com",
+          "created_at": "2025-10-18 16:44:35"
+        },
+        "token_length": 120
+      },
+      "timestamp": "2025-10-18T16:44:35.667019"
+    },
+    {
+      "test": "protected_endpoint_valid_token",
+      "passed": true,
+      "message": "Successfully accessed protected endpoint: testuser_1760805875",
+      "details": {
+        "user": {
+          "id": 12,
+          "username": "testuser_1760805875",
+          "email": "testuser_1760805875@test.com",
+          "created_at": "2025-10-18 16:44:35"
+        }
+      },
+      "timestamp": "2025-10-18T16:44:35.677832"
+    },
+    {
+      "test": "protected_endpoint_no_token",
+      "passed": false,
+      "message": "Should return 401 without token, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.683905"
+    },
+    {
+      "test": "protected_endpoint_invalid_token_0",
+      "passed": true,
+      "message": "Correctly rejected invalid token #1",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.687638"
+    },
+    {
+      "test": "protected_endpoint_invalid_token_1",
+      "passed": true,
+      "message": "Correctly rejected invalid token #2",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.693970"
+    },
+    {
+      "test": "protected_endpoint_invalid_token_2",
+      "passed": true,
+      "message": "Correctly rejected invalid token #3",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.700262"
+    },
+    {
+      "test": "protected_endpoint_invalid_token_3",
+      "passed": false,
+      "message": "Should return 401 for invalid token, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.703579"
+    },
+    {
+      "test": "protected_endpoint_invalid_token_4",
+      "passed": true,
+      "message": "Correctly rejected invalid token #5",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.707168"
+    },
+    {
+      "test": "documents_with_auth",
+      "passed": true,
+      "message": "Successfully accessed documents endpoint: 0 items",
+      "details": {
+        "document_count": 0
+      },
+      "timestamp": "2025-10-18T16:44:35.716898"
+    },
+    {
+      "test": "documents_without_auth",
+      "passed": false,
+      "message": "401 response missing proper auth error: {'detail': 'Authentication required'}",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.721045"
+    },
+    {
+      "test": "logout",
+      "passed": false,
+      "message": "Logout failed with status 404",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.723971"
+    },
+    {
+      "test": "token_after_logout",
+      "passed": false,
+      "message": "Token should be invalid after logout, got 200",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.729373"
+    },
+    {
+      "test": "register_user",
+      "passed": false,
+      "message": "Registration failed with status 200: {\"success\":true,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMyIsImV4cCI6MTc2MDg5MjI3NX0.9R-4rKhpG66CkvORzsb3UmOt5kbCsqVGRzVURRKabaE\",\"user\":{\"id\":13,\"username\":\"duptest_1760805875\",\"email\":\"duptest_1760805875@test.com\",\"created_at\":\"2025-10-18 16:44:35\"},\"message\":\"Registration successful\"}",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.846504"
+    },
+    {
+      "test": "malformed_auth_header_0",
+      "passed": false,
+      "message": "Should return 401 for malformed header, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.853883"
+    },
+    {
+      "test": "malformed_auth_header_1",
+      "passed": true,
+      "message": "Correctly rejected malformed header #2",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.857158"
+    },
+    {
+      "test": "malformed_auth_header_2",
+      "passed": false,
+      "message": "Should return 401 for malformed header, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.862288"
+    },
+    {
+      "test": "malformed_auth_header_3",
+      "passed": false,
+      "message": "Should return 401 for malformed header, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.867176"
+    },
+    {
+      "test": "malformed_auth_header_4",
+      "passed": false,
+      "message": "Should return 401 for malformed header, got 403",
+      "details": null,
+      "timestamp": "2025-10-18T16:44:35.870197"
+    }
+  ]
+}

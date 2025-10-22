@@ -1,0 +1,9 @@
+# Authentication and security
+bcrypt>=4.0.0
+
+# Web framework for better performance
+flask>=2.3.0
+flask-cors>=4.0.0
+gunicorn>=21.0.0
+
+# SQLite3 is included with Python standard library

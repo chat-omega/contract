@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "total_tests": 18,
+    "passed": 17,
+    "failed": 0,
+    "warnings": 1,
+    "success_rate": 94.44444444444444,
+    "duration": 11.062060832977295,
+    "timestamp": "2025-10-18T22:05:32.918903"
+  },
+  "results": [
+    {
+      "test_name": "Root Endpoint",
+      "status": "PASS",
+      "message": "Service is running: AI Research Service v1.0.0",
+      "duration": 0.005589008331298828,
+      "details": {
+        "service": "AI Research Service",
+        "status": "running",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "test_name": "Health Endpoint",
+      "status": "PASS",
+      "message": "Status: healthy",
+      "duration": 0.0047147274017333984,
+      "details": {
+        "status": "healthy",
+        "service": "AI Research Service"
+      }
+    },
+    {
+      "test_name": "Env Var: OPENAI_API_KEY",
+      "status": "PASS",
+      "message": "OpenAI API Key is configured (sk-proj-...RpYA)",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "length": 164
+      }
+    },
+    {
+      "test_name": "Env Var: TAVILY_API_KEY",
+      "status": "PASS",
+      "message": "Tavily API Key is configured (tvly-oFA...rDI2)",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "length": 37
+      }
+    },
+    {
+      "test_name": "Env Var: CORS_ORIGINS",
+      "status": "PASS",
+      "message": "CORS Origins: http://localhost:3000,http://localhost:3001,http:/",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "value": "http://localhost:3000,http://localhost:3001,http://localhost:3002"
+      }
+    },
+    {
+      "test_name": "Env Var: PORT",
+      "status": "PASS",
+      "message": "Server Port: 8000",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "value": "8000"
+      }
+    },
+    {
+      "test_name": "Env Var: ANTHROPIC_API_KEY",
+      "status": "PASS",
+      "message": "Anthropic API Key (optional): sk-ant-your-key-here",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "value": "sk-ant-your-key-here"
+      }
+    },
+    {
+      "test_name": "Env Var: LANGSMITH_API_KEY",
+      "status": "WARN",
+      "message": "LangSmith API Key (optional) not configured (optional)",
+      "duration": 0,
+      "details": {
+        "configured": false
+      }
+    },
+    {
+      "test_name": "Env Var: DEFAULT_MODEL",
+      "status": "PASS",
+      "message": "Default LLM Model: gpt-4-turbo-preview",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "value": "gpt-4-turbo-preview"
+      }
+    },
+    {
+      "test_name": "Env Var: DEFAULT_SEARCH_PROVIDER",
+      "status": "PASS",
+      "message": "Default Search Provider: tavily",
+      "duration": 0,
+      "details": {
+        "configured": true,
+        "value": "tavily"
+      }
+    },
+    {
+      "test_name": "Start Research - Valid Request",
+      "status": "PASS",
+      "message": "Session created: bbdb79fe..., Status: pending",
+      "duration": 0.03722691535949707,
+      "details": {
+        "id": "bbdb79fe-d246-4bfd-a127-059df37abaf7",
+        "query": "What are the latest developments in AI and machine learning in 2024?",
+        "status": "pending",
+        "createdAt": "2025-10-18T22:05:21.870201",
+        "updatedAt": "2025-10-18T22:05:21.870201",
+        "report": null,
+        "error": null,
+        "progress": null
+      }
+    },
+    {
+      "test_name": "Get Session - Valid ID",
+      "status": "PASS",
+      "message": "Retrieved session: running",
+      "duration": 0.008394956588745117,
+      "details": {
+        "id": "bbdb79fe-d246-4bfd-a127-059df37abaf7",
+        "query": "What are the latest developments in AI and machine learning in 2024?",
+        "status": "running",
+        "createdAt": "2025-10-18T22:05:21.870201",
+        "updatedAt": "2025-10-18T22:05:21.902968",
+        "report": null,
+        "error": null,
+        "progress": "Generating search queries for: What are the latest developments in AI and machine learning in 2024?"
+      }
+    },
+    {
+      "test_name": "Get Session - Invalid ID",
+      "status": "PASS",
+      "message": "Correctly returned 404 for invalid session",
+      "duration": 0.007341623306274414,
+      "details": {}
+    },
+    {
+      "test_name": "Research History",
+      "status": "PASS",
+      "message": "Retrieved 2 sessions",
+      "duration": 0.003619670867919922,
+      "details": {
+        "count": 2
+      }
+    },
+    {
+      "test_name": "Stream Research - SSE",
+      "status": "PASS",
+      "message": "Received 7 events, types: {'query_added', 'step_started', 'status', 'progress'}",
+      "duration": 10.95924186706543,
+      "details": {
+        "event_count": 7,
+        "event_types": [
+          "query_added",
+          "step_started",
+          "status",
+          "progress"
+        ]
+      }
+    },
+    {
+      "test_name": "Error Handling - Missing Query",
+      "status": "PASS",
+      "message": "Correctly rejected request with missing query",
+      "duration": 0.005238771438598633,
+      "details": {}
+    },
+    {
+      "test_name": "Error Handling - Invalid JSON",
+      "status": "PASS",
+      "message": "Correctly rejected invalid JSON (status 422)",
+      "duration": 0.0030722618103027344,
+      "details": {}
+    },
+    {
+      "test_name": "Performance - Health Endpoint",
+      "status": "PASS",
+      "message": "Avg: 0.005s, Min: 0.003s, Max: 0.007s",
+      "duration": 0,
+      "details": {
+        "avg": 0.005023384094238281,
+        "min": 0.0026314258575439453,
+        "max": 0.007099628448486328
+      }
+    }
+  ]
+}

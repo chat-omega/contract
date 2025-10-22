@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # Frontend Service - Development Mode
+  # ========================================
+  frontend:
+    image: node:18-alpine
+    container_name: omega-frontend-dev
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:5001/api
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend:/app
+      # Exclude node_modules from mount
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+    networks:
+      - omega-network
+    restart: unless-stopped
+    labels:
+      - "com.omega.service=frontend-dev"
+      - "com.omega.mode=development"
+
+  # ========================================
+  # Backend Service - Development Mode
+  # ========================================
+  backend:
+    image: node:18-alpine
+    container_name: omega-backend-dev
+    working_dir: /app
+    ports:
+      - "8000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      # Mount source code for hot reload
+      - ./backend:/app
+      # Exclude node_modules and dist from mount
+      - /app/node_modules
+      - /app/dist
+      # Persistent volumes for data
+      - uploads-data-dev:/app/uploads
+      - logs-data-dev:/app/logs
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - omega-network
+    restart: unless-stopped
+    labels:
+      - "com.omega.service=backend-dev"
+      - "com.omega.mode=development"
+
+  # ========================================
+  # Legacy Backend FastAPI Service - Development Mode
+  # ========================================
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: omega-backend-fastapi-dev
+    ports:
+      - "5001:5000"
+    env_file:
+      - ./backend-fastapi/.env
+    volumes:
+      # Mount source code for live editing
+      - ./backend-fastapi:/app
+      # Preserve Python packages in container
+      - backend-dev-packages:/usr/local/lib/python3.11/site-packages
+      # Persist database and uploads across restarts
+      - uploads-data-dev:/app/uploads
+      - database-data-dev:/app/database
+      # Mount design files (read-only)
+      - ./design:/app/design:ro
+    entrypoint: []
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             uvicorn main:app --reload --host 0.0.0.0 --port 5000"
+    networks:
+      - omega-network
+    restart: unless-stopped
+    labels:
+      - "com.omega.service=backend-fastapi-dev"
+      - "com.omega.mode=development"
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  omega-network:
+    driver: bridge
+    name: omega-dev-net
+    labels:
+      - "com.omega.network=development"
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  backend-dev-packages:
+    driver: local
+  uploads-data-dev:
+    driver: local
+    labels:
+      - "com.omega.volume=uploads-dev"
+  logs-data-dev:
+    driver: local
+    labels:
+      - "com.omega.volume=logs-dev"
+  database-data-dev:
+    driver: local
+    labels:
+      - "com.omega.volume=database-dev"

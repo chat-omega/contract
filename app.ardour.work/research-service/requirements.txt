@@ -1,0 +1,22 @@
+# FastAPI and server dependencies
+fastapi==0.115.5
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+python-dotenv==1.0.1
+
+# LangChain and LangGraph dependencies
+langgraph==0.2.64
+langchain==0.3.16
+langchain-openai==0.3.0
+langchain-anthropic==0.3.0
+langchain-core>=0.3.32
+langsmith==0.2.11
+
+# Search providers
+tavily-python==0.5.0
+
+# Utilities
+pydantic==2.10.5
+aiofiles==24.1.0
+httpx==0.28.1
+sse-starlette==2.2.1

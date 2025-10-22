@@ -1,0 +1,395 @@
+/* AG-Grid Styles */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* OpenBB Light Theme */
+    --brand-main: 0 136 204;           /* #0088CC - OpenBB primary blue */
+    --brand-lighter: 77 172 219;       /* #4dacdb - Lighter blue */
+    --brand-darker: 0 95 143;          /* #005f8f - Darker blue */
+    
+    /* Light theme variables */
+    --background: 255 255 255;         /* Pure white background */
+    --background-secondary: 248 250 252; /* Light gray */
+    --background-tertiary: 241 245 249; /* Lighter gray */
+    --surface: 255 255 255;            /* Surface white */
+    --surface-hover: 248 250 252;      /* Light hover */
+    
+    --foreground: 15 23 42;            /* Dark text */
+    --foreground-secondary: 51 65 85;  /* Medium text */
+    --foreground-muted: 100 116 139;   /* Muted text */
+    
+    --card: 255 255 255;               /* White cards */
+    --card-secondary: 248 250 252;     /* Light gray cards */
+    --card-foreground: 15 23 42;       /* Dark card text */
+    
+    --primary: 0 136 204;              /* OpenBB blue */
+    --primary-foreground: 255 255 255; /* White on blue */
+    --primary-hover: 0 95 143;         /* Darker blue hover */
+    
+    --secondary: 241 245 249;          /* Light secondary */
+    --secondary-foreground: 51 65 85;  /* Dark secondary text */
+    --secondary-hover: 226 232 240;    /* Secondary hover */
+    
+    --muted: 241 245 249;              /* Muted backgrounds */
+    --muted-foreground: 100 116 139;   /* Muted text */
+    
+    --accent: 0 136 204;               /* OpenBB blue accent */
+    --accent-foreground: 255 255 255;  /* White on accent */
+    
+    --success: 5 150 105;              /* Success green */
+    --success-foreground: 255 255 255; /* White on success */
+    
+    --warning: 245 158 11;             /* Warning orange */
+    --warning-foreground: 255 255 255; /* White on warning */
+    
+    --destructive: 220 38 38;          /* Error red */
+    --destructive-foreground: 255 255 255; /* White on error */
+    
+    --border: 226 232 240;             /* Light borders */
+    --border-light: 241 245 249;       /* Lighter borders */
+    --input: 255 255 255;              /* White inputs */
+    --ring: 0 136 204;                 /* Blue focus rings */
+    
+    --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    --radius: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+  }
+  
+  .dark {
+    /* OpenBB Dark Theme */
+    --background: 15 23 42;            /* Dark navy background */
+    --background-secondary: 30 41 59;  /* Secondary dark */
+    --background-tertiary: 51 65 85;   /* Tertiary dark */
+    --surface: 30 41 59;               /* Dark surface */
+    --surface-hover: 51 65 85;         /* Dark hover */
+    
+    --foreground: 248 250 252;         /* Light text */
+    --foreground-secondary: 203 213 225; /* Secondary light text */
+    --foreground-muted: 148 163 184;   /* Muted light text */
+    
+    --card: 30 41 59;                  /* Dark cards */
+    --card-secondary: 51 65 85;        /* Secondary dark cards */
+    --card-foreground: 248 250 252;    /* Light card text */
+    
+    --primary: 77 172 219;             /* Lighter blue for dark theme */
+    --primary-foreground: 15 23 42;    /* Dark on light blue */
+    --primary-hover: 0 136 204;        /* Original blue hover */
+    
+    --secondary: 51 65 85;             /* Dark secondary */
+    --secondary-foreground: 203 213 225; /* Light secondary text */
+    --secondary-hover: 71 85 105;      /* Secondary hover */
+    
+    --muted: 51 65 85;                 /* Dark muted */
+    --muted-foreground: 148 163 184;   /* Muted light text */
+    
+    --accent: 77 172 219;              /* Light blue accent */
+    --accent-foreground: 15 23 42;     /* Dark on accent */
+    
+    --success: 34 197 94;              /* Bright green */
+    --success-foreground: 15 23 42;    /* Dark on success */
+    
+    --warning: 251 191 36;             /* Bright yellow */
+    --warning-foreground: 15 23 42;    /* Dark on warning */
+    
+    --destructive: 248 113 113;        /* Bright red */
+    --destructive-foreground: 15 23 42; /* Dark on error */
+    
+    --border: 51 65 85;                /* Dark borders */
+    --border-light: 71 85 105;         /* Lighter dark borders */
+    --input: 30 41 59;                 /* Dark inputs */
+    --ring: 77 172 219;                /* Light blue focus rings */
+    
+    --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased transition-colors duration-300;
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1, "ss01" 1;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-optical-sizing: auto;
+    
+    /* Clean professional background */
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(var(--brand-main), 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(var(--brand-lighter), 0.02) 0%, transparent 50%);
+    background-attachment: fixed;
+    background-size: 800px 800px, 600px 600px;
+    
+    /* Professional typography */
+    letter-spacing: -0.01em;
+    line-height: 1.6;
+  }
+
+  /* Professional scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--background-secondary));
+    border-radius: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--muted));
+    border-radius: 8px;
+    border: 2px solid rgb(var(--background-secondary));
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--accent));
+  }
+}
+
+/* OpenBB Professional UI Components */
+@layer components {
+  .openbb-card {
+    @apply rounded-lg border transition-all duration-200;
+    background-color: rgb(var(--card));
+    border-color: rgb(var(--border));
+    box-shadow: var(--shadow-light);
+  }
+  
+  .openbb-card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+  }
+  
+  .openbb-surface {
+    background-color: rgb(var(--surface));
+    border-color: rgb(var(--border));
+  }
+  
+  .openbb-surface:hover {
+    background-color: rgb(var(--surface-hover));
+  }
+  
+  .brand-gradient {
+    background: linear-gradient(135deg, 
+      rgb(var(--brand-main)) 0%, 
+      rgb(var(--brand-lighter)) 100%);
+  }
+  
+  .brand-border {
+    border: 1px solid rgb(var(--border));
+  }
+  
+  .theme-toggle-button {
+    @apply rounded-lg transition-all duration-200;
+    background-color: rgb(var(--surface));
+    border: 1px solid rgb(var(--border));
+  }
+  
+  .theme-toggle-button:hover {
+    background-color: rgb(var(--surface-hover));
+    transform: scale(1.05);
+  }
+  
+  .openbb-input {
+    @apply brand-border rounded-lg px-3 py-2 transition-all duration-200;
+    background-color: rgb(var(--input));
+    color: rgb(var(--foreground));
+  }
+  
+  .openbb-input:focus {
+    outline: none;
+    border-color: rgb(var(--primary));
+    box-shadow: 0 0 0 3px rgba(var(--primary) / 0.1);
+  }
+  
+  .openbb-input::placeholder {
+    color: rgb(var(--muted-foreground));
+  }
+  
+  .openbb-button {
+    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200 ease-out;
+    background-color: rgb(var(--primary));
+    color: rgb(var(--primary-foreground));
+    border: 1px solid rgb(var(--primary));
+  }
+  
+  .openbb-button:hover {
+    background-color: rgb(var(--primary-hover));
+    border-color: rgb(var(--primary-hover));
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+  }
+  
+  .openbb-button:active {
+    transform: translateY(0);
+  }
+  
+  .openbb-button-secondary {
+    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200 ease-out;
+    background-color: rgb(var(--secondary));
+    color: rgb(var(--secondary-foreground));
+    border: 1px solid rgb(var(--border));
+  }
+  
+  .openbb-button-secondary:hover {
+    background-color: rgb(var(--secondary-hover));
+    border-color: rgb(var(--primary));
+    color: rgb(var(--primary));
+  }
+  
+  .sort-indicator {
+    @apply inline-flex items-center justify-center ml-1 w-4 h-4 text-xs transition-colors;
+  }
+  
+  .sort-indicator.active {
+    color: rgb(var(--accent));
+  }
+  
+  .sort-indicator.inactive {
+    color: rgb(var(--muted-foreground));
+    opacity: 0.5;
+  }
+  
+  .table-header {
+    @apply font-semibold text-sm uppercase tracking-wider cursor-pointer select-none;
+    @apply transition-all duration-150 ease-out;
+    color: rgb(var(--muted-foreground));
+  }
+  
+  .table-header:hover {
+    color: rgb(var(--foreground));
+  }
+  
+  .table-header.sortable {
+    @apply flex items-center justify-between;
+  }
+  
+  .table-row {
+    @apply transition-all duration-150 ease-out border-b;
+    border-color: rgb(var(--border));
+  }
+  
+  .table-row:hover {
+    background: rgba(var(--card-secondary) / 0.5);
+  }
+  
+  .table-row.selected {
+    background: rgba(var(--accent) / 0.1);
+    border-color: rgb(var(--accent));
+  }
+  
+  .metrics-card {
+    @apply openbb-card p-6 rounded-xl;
+  }
+  
+  .metrics-card .metric-value {
+    @apply text-2xl font-bold;
+    color: rgb(var(--accent));
+  }
+  
+  .metrics-card .metric-label {
+    @apply text-sm font-medium;
+    color: rgb(var(--muted-foreground));
+  }
+  
+  .metrics-card .metric-change {
+    @apply text-xs font-medium;
+  }
+  
+  .metrics-card .metric-change.positive {
+    color: rgb(var(--success));
+  }
+  
+  .metrics-card .metric-change.negative {
+    color: rgb(var(--destructive));
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge.active {
+    background: rgba(var(--success) / 0.1);
+    color: rgb(var(--success));
+    border: 1px solid rgba(var(--success) / 0.2);
+  }
+  
+  .status-badge.exited {
+    background: rgba(var(--muted) / 0.1);
+    color: rgb(var(--muted-foreground));
+    border: 1px solid rgba(var(--muted) / 0.2);
+  }
+  
+  .status-badge.ipo {
+    background: rgba(var(--accent) / 0.1);
+    color: rgb(var(--accent));
+    border: 1px solid rgba(var(--accent) / 0.2);
+  }
+  
+  /* AG-Grid OpenBB Theme Customization */
+  .ag-theme-alpine-dark {
+    --ag-background-color: rgb(var(--background));
+    --ag-header-background-color: rgb(var(--background-secondary));
+    --ag-odd-row-background-color: rgba(var(--background-secondary), 0.3);
+    --ag-row-hover-color: rgba(var(--primary), 0.1);
+    --ag-selected-row-background-color: rgba(var(--primary), 0.15);
+    
+    --ag-border-color: rgb(var(--border));
+    --ag-header-column-separator-color: rgb(var(--border));
+    
+    --ag-foreground-color: rgb(var(--foreground));
+    --ag-secondary-foreground-color: rgb(var(--foreground-secondary));
+    --ag-disabled-foreground-color: rgb(var(--muted-foreground));
+    
+    --ag-input-border-color: rgb(var(--border));
+    --ag-input-border-color-invalid: rgb(var(--destructive));
+    
+    --ag-font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --ag-font-size: 14px;
+    
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .ag-theme-alpine-dark .ag-header {
+    border-bottom: 1px solid rgb(var(--border));
+    font-weight: 600;
+  }
+  
+  .ag-theme-alpine-dark .ag-header-cell {
+    padding: 0 16px;
+  }
+  
+  .ag-theme-alpine-dark .ag-cell {
+    padding: 0 16px;
+    border-right: 1px solid rgba(var(--border), 0.5);
+  }
+  
+  .ag-theme-alpine-dark .ag-row {
+    border-bottom: 1px solid rgba(var(--border), 0.3);
+  }
+  
+  .ag-theme-alpine-dark .ag-paging-panel {
+    border-top: 1px solid rgb(var(--border));
+    background-color: rgb(var(--background-secondary));
+    padding: 12px 16px;
+  }
+}

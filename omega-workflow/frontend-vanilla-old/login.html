@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OMEGA</title>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/auth.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0IiBmaWxsPSJub25lIj4KICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTY0IDMyQzY0IDE0LjMyNjkgNDkuNjczMSAxLjY0MzQyZS0wNiAzMiAyLjQxNTkzZS0wNkMxNC4zMjY5IDMuMTg4NDVlLTA2IC0yLjE3MTI4ZS0wNiAxNC4zMjY5IC0xLjM5ODc2ZS0wNiAzMkMtNi4yNjI0OGUtMDcgNDkuNjczMSAxNC4zMjY5IDY0IDMyIDY0QzQ5LjY3MzEgNjQgNjQgNDkuNjczMSA2NCAzMlpNNTIuNTcxNCAzMkM1Mi41NzE0IDIwLjYzODcgNDMuMzYxMyAxMS40Mjg2IDMyIDExLjQyODZDMjAuNjM4NyAxMS40Mjg2IDExLjQyODYgMjAuNjM4NyAxMS40Mjg2IDMyQzExLjQyODYgNDMuMzYxMyAyMC42Mzg3IDUyLjU3MTQgMzIgNTIuNTcxNEM0My4zNjEzIDUyLjU3MTQgNTIuNTcxNCA0My4zNjEzIDUyLjU3MTQgMzJaIiBmaWxsPSIjRkVDNjJDIi8+Cjwvc3ZnPgo=">
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Logo and Branding -->
+        <div class="auth-header">
+            <div class="auth-logo">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M64 32C64 14.3269 49.6731 0 32 0C14.3269 0 0 14.3269 0 32C0 49.6731 14.3269 64 32 64C49.6731 64 64 49.6731 64 32ZM52.5714 32C52.5714 20.6387 43.3613 11.4286 32 11.4286C20.6387 11.4286 11.4286 20.6387 11.4286 32C11.4286 43.3613 20.6387 52.5714 32 52.5714C43.3613 52.5714 52.5714 43.3613 52.5714 32Z" fill="#FEC62C"/>
+                </svg>
+                <h1>OMEGA</h1>
+            </div>
+            <p class="auth-subtitle">Document Management & Workflow System</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="auth-card">
+            <form id="login-form" class="auth-form">
+                <h2>Sign In</h2>
+                <p class="form-description">Enter your credentials to access your account</p>
+
+                <!-- Error Message -->
+                <div id="error-message" class="error-message" style="display: none;"></div>
+
+                <!-- Username Field -->
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">person</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required 
+                            autocomplete="username"
+                            placeholder="Enter your username or email"
+                        >
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">lock</span>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            autocomplete="current-password"
+                            placeholder="Enter your password"
+                        >
+                        <button type="button" class="toggle-password" id="toggle-password">
+                            <span class="material-icons">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-submit-btn" id="login-btn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-spinner" style="display: none;">
+                        <span class="material-icons spinning">refresh</span>
+                    </span>
+                </button>
+
+                <!-- Register Link -->
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="register.html" class="register-link">Create one</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Demo Credentials -->
+        <div class="demo-credentials">
+            <h3>Demo Credentials</h3>
+            <div class="demo-account">
+                <strong>Username:</strong> admin<br>
+                <strong>Password:</strong> admin123
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/auth.js"></script>
+</body>
+</html>

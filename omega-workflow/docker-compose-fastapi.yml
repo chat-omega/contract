@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: omega-frontend-v2
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - API_URL=http://backend-fastapi:5000
+    depends_on:
+      - backend-fastapi
+    networks:
+      - omega-network-v2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://0.0.0.0:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: omega-backend-fastapi
+    ports:
+      - "5001:5000"  # Use different port to avoid conflicts
+    environment:
+      - PORT=5000
+      - PYTHONUNBUFFERED=1
+      - JWT_SECRET=omega-workflow-jwt-secret-change-in-production
+    volumes:
+      - uploads-data-v2:/app/uploads
+      - database-data-v2:/app/database
+    networks:
+      - omega-network-v2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  omega-network-v2:
+    driver: bridge
+    name: omega-net-v2
+
+volumes:
+  uploads-data-v2:
+  database-data-v2:

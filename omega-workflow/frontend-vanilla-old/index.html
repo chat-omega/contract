@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management System</title>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css?v=20251017-v2">
+    <link rel="stylesheet" href="css/scoring.css?v=20251018-v1">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0IiBmaWxsPSJub25lIj4KICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTY0IDMyQzY0IDE0LjMyNjkgNDkuNjczMSAxLjY0MzQyZS0wNiAzMiAyLjQxNTkzZS0wNkMxNC4zMjY5IDMuMTg4NDVlLTA2IC0yLjE3MTI4ZS0wNiAxNC4zMjY5IC0xLjM5ODc2ZS0wNiAzMkMtNi4yNjI0OGUtMDcgNDkuNjczMSAxNC4zMjY5IDY0IDMyIDY0QzQ5LjY3MzEgNjQgNjQgNDkuNjczMSA2NCAzMlpNNTIuNTcxNCAzMkM1Mi41NzE0IDIwLjYzODcgNDMuMzYxMyAxMS40Mjg2IDMyIDExLjQyODZDMjAuNjM4NyAxMS40Mjg2IDExLjQyODYgMjAuNjM4NyAxMS40Mjg2IDMyQzExLjQyODYgNDMuMzYxMyAyMC42Mzg3IDUyLjU3MTQgMzIgNTIuNTcxNEM0My4zNjEzIDUyLjU3MTQgNTIuNTcxNCA0My4zNjEzIDUyLjU3MTQgMzJaIiBmaWxsPSIjRkVDNjJDIi8+Cjwvc3ZnPgo=">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M64 32C64 14.3269 49.6731 0 32 0C14.3269 0 0 14.3269 0 32C0 49.6731 14.3269 64 32 64C49.6731 64 64 49.6731 64 32ZM52.5714 32C52.5714 20.6387 43.3613 11.4286 32 11.4286C20.6387 11.4286 11.4286 20.6387 11.4286 32C11.4286 43.3613 20.6387 52.5714 32 52.5714C43.3613 52.5714 52.5714 43.3613 52.5714 32Z" fill="#FEC62C"/>
+                    </svg>
+                    <span class="logo-text">OMEGA</span>
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/workflows">
+                        <span class="material-icons">account_tree</span>
+                        <span class="nav-text">Workflows</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item active">
+                    <a href="/documents">
+                        <span class="material-icons">description</span>
+                        <span class="nav-text">Documents</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/scores">
+                        <span class="material-icons">assessment</span>
+                        <span class="nav-text">Document Scores</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/uploads">
+                        <span class="material-icons">cloud_upload</span>
+                        <span class="nav-text">Uploads & Imports</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/field-discovery">
+                        <span class="material-icons">filter_list</span>
+                        <span class="nav-text">Field Discovery</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <hr class="divider">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/settings">
+                            <span class="material-icons">settings</span>
+                            <span class="nav-text">Settings</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/account">
+                            <span class="material-icons">person</span>
+                            <span class="nav-text">My Account</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/support">
+                            <span class="material-icons">contact_support</span>
+                            <span class="nav-text">Contact Support</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#logout">
+                            <span class="material-icons">exit_to_app</span>
+                            <span class="nav-text">Log Out</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="header-left">
+                    <span class="org-name">Test</span>
+                    <button class="switch-org-btn">
+                        Switch Organization
+                        <span class="material-icons">arrow_forward</span>
+                    </button>
+                </div>
+                <div class="header-right">
+                    <button class="feedback-btn">Submit Feedback</button>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <main class="page-content" id="documents-page" style="display: none;">
+                <h1 class="page-title">My Documents</h1>
+                
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn-icon" disabled>
+                            <span>Open</span>
+                            <span class="material-icons">open_in_new</span>
+                        </button>
+                        <button class="btn-icon" disabled>
+                            <span>Export</span>
+                            <span class="material-icons">download</span>
+                        </button>
+                        <div class="toolbar-divider"></div>
+                        <div class="dropdown">
+                            <button class="btn-dropdown" id="files-dropdown" disabled>
+                                <span class="material-icons">folder_open</span>
+                                <span id="files-dropdown-text">Files</span>
+                                <span class="material-icons">keyboard_arrow_down</span>
+                            </button>
+                            <div class="dropdown-menu" id="files-dropdown-menu" style="display: none;">
+                                <button class="dropdown-item" id="rename-document-btn">
+                                    <span class="material-icons">edit</span>
+                                    Rename
+                                </button>
+                                <button class="dropdown-item" id="delete-document-btn">
+                                    <span class="material-icons">delete</span>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn-dropdown" id="workflows-dropdown" disabled>
+                                <span class="material-icons">schema</span>
+                                <span id="workflows-dropdown-text">Workflows</span>
+                                <span class="material-icons">keyboard_arrow_down</span>
+                            </button>
+                            <div class="dropdown-menu" id="workflows-dropdown-menu" style="display: none;">
+                                <button class="dropdown-item" id="assign-workflow-btn">
+                                    <span class="material-icons">add</span>
+                                    Assign Workflow
+                                </button>
+                                <button class="dropdown-item" id="remove-workflow-btn">
+                                    <span class="material-icons">remove</span>
+                                    Remove Workflow
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn-dropdown" disabled>
+                            <span class="material-icons">person_add</span>
+                            <span>Reviews</span>
+                            <span class="material-icons">keyboard_arrow_down</span>
+                        </button>
+                        <div class="toolbar-divider"></div>
+                        <button class="btn-dropdown" id="search-filter-toggle">
+                            <span class="material-icons">travel_explore</span>
+                            <span>Search & Filter</span>
+                            <span class="material-icons">keyboard_arrow_down</span>
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn-primary" id="add-documents-btn">Add Documents</button>
+                    </div>
+                </div>
+                
+                <!-- Search & Filter Panel (Hidden by default) -->
+                <div id="search-panel" class="search-panel" style="display: none;">
+                    <div class="search-controls">
+                        <div class="search-field">
+                            <label>Retrieving results within</label>
+                            <select class="form-select">
+                                <option>All Workflows</option>
+                                <option>Recent Workflows</option>
+                                <option>My Workflows</option>
+                            </select>
+                        </div>
+                        <button class="btn-text">
+                            <span class="material-icons">add_circle_outline</span>
+                            <span>Add Filter</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Documents Table -->
+                <div class="data-table-container">
+                    <div class="table-controls">
+                        <div class="rows-per-page">
+                            <label>Rows per page:</label>
+                            <select id="rows-select">
+                                <option>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                            </select>
+                        </div>
+                        <div class="pagination">
+                            <span id="pagination-info">0–0 of 0</span>
+                            <button class="btn-icon-small" disabled>
+                                <span class="material-icons">chevron_left</span>
+                            </button>
+                            <button class="btn-icon-small" disabled>
+                                <span class="material-icons">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" class="checkbox-all"></th>
+                                <th>Name <span class="material-icons sort-icon">arrow_upward</span></th>
+                                <th>Added On</th>
+                                <th>Uploaded By</th>
+                                <th>Document Type</th>
+                                <th>Workflows</th>
+                                <th>Reviewers</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documents-tbody">
+                            <!-- Documents will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+            
+            <!-- Workflows Page (Hidden by default) -->
+            <main class="page-content" id="workflows-page" style="display: none;">
+                <div class="workflows-header">
+                    <h1 class="page-title-large">What kind of review are you doing?</h1>
+                    <button class="btn-primary create-workflow-btn">Create Workflow</button>
+                </div>
+                
+                <p class="page-description">
+                    A workflow is a review process where provisions from your documents will be extracted by Analyze based on the fields that you choose to include in your workflow.
+                </p>
+                
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="your-workflows">Your Workflows</button>
+                        <button class="tab" data-tab="workflow-library">Workflow Library</button>
+                    </div>
+                    <button id="delete-all-workflows-btn" class="delete-all-workflows-btn" style="display: none;" title="Delete all workflows">
+                        <span class="material-icons">delete_sweep</span>
+                    </button>
+                </div>
+
+                <!-- Your Workflows Tab Content -->
+                <div class="tab-content active" id="your-workflows">
+                    <!-- Workflows will be loaded dynamically here -->
+                    <div id="your-workflows-container">
+                        <div class="empty-workflows-state" style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                            <span class="material-icons" style="font-size: 64px; color: #d1d5db;">folder_open</span>
+                            <h3 style="margin: 16px 0 8px 0; color: #374151;">No workflows yet</h3>
+                            <p style="margin: 0 0 24px 0;">Create your first workflow using "Create Workflow" or copy from the Workflow Library</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow Library Tab Content -->
+                <div class="tab-content" id="workflow-library">
+                    <div class="workflow-library-cards">
+                        
+                        <!-- M&A/Due Diligence Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">M&A/Due Diligence</h3>
+                                <p class="workflow-card-desc">Best suited for understanding the basic information in a variety of agreements when doing due diligence.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Service Agt</span>
+                                    <span class="tag-chip">Supply Agt</span>
+                                    <span class="tag-chip">Distribution Agt</span>
+                                    <span class="tag-chip">IP Agt</span>
+                                    <span class="tag-chip">Employment Related Agt</span>
+                                    <span class="tag-chip">Governance Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Term and Renewal</span>
+                                            <span class="field-chip">Does the agreement auto renew?</span>
+                                            <span class="field-chip">Can the agreement be terminated for convenience?</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (8)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Can the agreement be assigned?</span>
+                                            <span class="field-chip">What are the obligations and requirements resulting from a Change of Control?</span>
+                                            <span class="field-chip">Exclusivity</span>
+                                            <span class="field-chip">Non-Compete</span>
+                                            <span class="field-chip">Non-Solicit</span>
+                                            <span class="field-chip">Most Favored Nation</span>
+                                            <span class="field-chip">Can notice be given electronically?</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LeaseLens - Short Form Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">LeaseLens - Short Form</h3>
+                                <p class="workflow-card-desc">Best suited for understanding the basic information in a North American lease.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Real Estate Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                            <span class="field-chip">Guarantor</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Property Basics/Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Premises Type</span>
+                                            <span class="field-chip">Address of Premises</span>
+                                            <span class="field-chip">Square Footage of Premises</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Initial Term</span>
+                                            <span class="field-chip">Commencement Date (Short Form)</span>
+                                            <span class="field-chip">Commencement Date (Long Form)</span>
+                                            <span class="field-chip">Expiration Date — Lease</span>
+                                            <span class="field-chip">Renewal — Lease</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Use of Property (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Use of Premises</span>
+                                            <span class="field-chip">Parking</span>
+                                            <span class="field-chip">Description of Premises</span>
+                                            <span class="field-chip">Utilities</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Rent and Expenses (6)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Base Rent</span>
+                                            <span class="field-chip">Additional Rent</span>
+                                            <span class="field-chip">Rent Payment Date</span>
+                                            <span class="field-chip">Late Payment and Grace Period</span>
+                                            <span class="field-chip">Security Deposit/Letters of Credit</span>
+                                            <span class="field-chip">"Operating Expenses"/"Common Area Maintenance" Definition</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (1)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Notice</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LeaseLens - Long Form Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">LeaseLens - Long Form</h3>
+                                <p class="workflow-card-desc">Expands upon the short form version by providing additional information in a North American lease.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Real Estate Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                            <span class="field-chip">Guarantor</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Property Basics/Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Premises Type</span>
+                                            <span class="field-chip">Address of Premises</span>
+                                            <span class="field-chip">Square Footage of Premises</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (12)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Initial Term</span>
+                                            <span class="field-chip">Commencement Date (Short Form)</span>
+                                            <span class="field-chip">Commencement Date (Long Form)</span>
+                                            <span class="field-chip">Expiration Date — Lease</span>
+                                            <span class="field-chip">Renewal — Lease</span>
+                                            <span class="field-chip">Unilateral Tenant Termination Rights</span>
+                                            <span class="field-chip">Termination for Casualty — Lease</span>
+                                            <span class="field-chip">Casualty</span>
+                                            <span class="field-chip">Holdover</span>
+                                            <span class="field-chip">Surrender</span>
+                                            <span class="field-chip">Recapture</span>
+                                            <span class="field-chip">Termination Damages — Lease</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Use of Property (11)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Use of Premises</span>
+                                            <span class="field-chip">Parking</span>
+                                            <span class="field-chip">Description of Premises</span>
+                                            <span class="field-chip">Utilities</span>
+                                            <span class="field-chip">Prohibited Use</span>
+                                            <span class="field-chip">Signage</span>
+                                            <span class="field-chip">Permitted Alterations/Additions</span>
+                                            <span class="field-chip">Non-Disturbance/Quiet Enjoyment</span>
+                                            <span class="field-chip">Relocation</span>
+                                            <span class="field-chip">Operating Covenant</span>
+                                            <span class="field-chip">Right to Enter/Right of Inspection</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Rent and Expenses (9)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Base Rent</span>
+                                            <span class="field-chip">Additional Rent</span>
+                                            <span class="field-chip">Rent Payment Date</span>
+                                            <span class="field-chip">Late Payment and Grace Period</span>
+                                            <span class="field-chip">Security Deposit/Letters of Credit</span>
+                                            <span class="field-chip">"Operating Expenses"/"Common Area Maintenance" Definition</span>
+                                            <span class="field-chip">Liability Cap</span>
+                                            <span class="field-chip">Net Lease</span>
+                                            <span class="field-chip">Gross Up</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Transfer Provisions (8)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Permitted Subletting and Transfers</span>
+                                            <span class="field-chip">Purchase Options and Rights of First Refusal/First Offer - Lease</span>
+                                            <span class="field-chip">Landlord Consent for Lease Transfer</span>
+                                            <span class="field-chip">Tenant Transfer Rights to Affiliate</span>
+                                            <span class="field-chip">Additional Conditions for Transfer</span>
+                                            <span class="field-chip">Lease Transfer Fees</span>
+                                            <span class="field-chip">Sublease/Assignment Profit-Sharing</span>
+                                            <span class="field-chip">Change of Control — Lease</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Default Provisions (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Events of Default — Lease</span>
+                                            <span class="field-chip">Landlord Remedies Upon Events of Default</span>
+                                            <span class="field-chip">Landlord's Default — Cure Periods</span>
+                                            <span class="field-chip">Tenant's Default — Cure Periods for Monetary Defaults</span>
+                                            <span class="field-chip">Default or Termination for Bankruptcy/Insolvency</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Other Obligations (8)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Insurance — Lease</span>
+                                            <span class="field-chip">Tenant Insurance Obligations</span>
+                                            <span class="field-chip">Subordination</span>
+                                            <span class="field-chip">Attornment</span>
+                                            <span class="field-chip">Estoppel Certificate Requirements</span>
+                                            <span class="field-chip">Subrogation Waiver</span>
+                                            <span class="field-chip">Indemnity</span>
+                                            <span class="field-chip">Environmental Indemnity</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Notice</span>
+                                            <span class="field-chip">Survival</span>
+                                            <span class="field-chip">Force Majeure — Lease</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- NDAs Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">NDAs</h3>
+                                <p class="workflow-card-desc">Use this workflow to identify common provisions from Non-Disclosure Agreements, specifically confidentiality provisions and key related topics.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Non-Disclosure Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (1)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Initial Term</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Confidential Information (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">"Confidential Information" Definition</span>
+                                            <span class="field-chip">Ownership of Confidential Information</span>
+                                            <span class="field-chip">What triggers the requirement to return or destroy confidential information/data?</span>
+                                            <span class="field-chip">Is there a requirement to certify that Confidential Information/Data has been returned or destroyed?</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Non-Compete</span>
+                                            <span class="field-chip">Non-Solicit</span>
+                                            <span class="field-chip">Notice</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Litigations - Work From SAP Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Litigations - Work From SAP</h3>
+                                <p class="workflow-card-desc">Use this workflow to understand the important dates and data around various litigation documents.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Case Information (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Case Name</span>
+                                            <span class="field-chip">Case Number</span>
+                                            <span class="field-chip">Court</span>
+                                            <span class="field-chip">Judge</span>
+                                            <span class="field-chip">Filing Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Parties (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Plaintiff</span>
+                                            <span class="field-chip">Defendant</span>
+                                            <span class="field-chip">Other Parties</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Key Dates (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Answer Due Date</span>
+                                            <span class="field-chip">Discovery Cutoff</span>
+                                            <span class="field-chip">Trial Date</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Litigations - Long Form SAP Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Litigations - Long Form SAP</h3>
+                                <p class="workflow-card-desc">Use this workflow to understand important dates and data, as well as extract provisions, from a variety of legal agreements.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <!-- Field details would go here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Litigations - Long Form (v2) Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Litigations - Long Form (v2)</h3>
+                                <p class="workflow-card-desc">Use this workflow to extract important dates, data and provisions from a variety of legal agreements.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <!-- Field details would go here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Agreements - Finance/Ops/Privacy Terms Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Customer Agreements - Finance/Ops/Privacy Terms</h3>
+                                <p class="workflow-card-desc">Best suited for understanding finance, operations, and privacy terms in customer agreements.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Termination (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Termination</span>
+                                            <span class="field-chip">Can the agreement be terminated for convenience?</span>
+                                            <span class="field-chip">Effects of Termination</span>
+                                            <span class="field-chip">Liability on Termination</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Pricing/Payment (6)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Price Increases/Escalation</span>
+                                            <span class="field-chip">Non-Refundable Amounts</span>
+                                            <span class="field-chip">Payment Due Dates</span>
+                                            <span class="field-chip">Early Payment Discount</span>
+                                            <span class="field-chip">Discounts</span>
+                                            <span class="field-chip">Currency</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Confidentiality (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Confidentiality</span>
+                                            <span class="field-chip">Personnel/Third Party Confidentiality Requirements</span>
+                                            <span class="field-chip">Permitted Use of Data/Confidential Information</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Data Security (11)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Security Measures (General)</span>
+                                            <span class="field-chip">Notification Upon Data Breach</span>
+                                            <span class="field-chip">Duty to Investigate/Monitor/Assist Upon Breach</span>
+                                            <span class="field-chip">Assistance with Data Subject Requests</span>
+                                            <span class="field-chip">Procedures for Data Subject Requests</span>
+                                            <span class="field-chip">Transfer of Data</span>
+                                            <span class="field-chip">Right to Create Aggregated/Statistical Data</span>
+                                            <span class="field-chip">Do Not Sell Personal Information</span>
+                                            <span class="field-chip">Customer License Grant</span>
+                                            <span class="field-chip">Backups of Customer Data</span>
+                                            <span class="field-chip">Privacy Officer</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Product/Service Requirements (10)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Service Level</span>
+                                            <span class="field-chip">Minimum Purchase Amounts</span>
+                                            <span class="field-chip">Performance Obligation — Supplies, Purchases and Sales</span>
+                                            <span class="field-chip">Performance Obligation — Services</span>
+                                            <span class="field-chip">Product Returns</span>
+                                            <span class="field-chip">Customer Feedback</span>
+                                            <span class="field-chip">Insurance</span>
+                                            <span class="field-chip">Certificate of Insurance</span>
+                                            <span class="field-chip">Subcontracting</span>
+                                            <span class="field-chip">Business Continuity</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (6)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Can notice be given electronically?</span>
+                                            <span class="field-chip">Non-Solicit</span>
+                                            <span class="field-chip">Disclaimer of Liability — Loss of Data</span>
+                                            <span class="field-chip">Limitation of Liability — Financial Cap</span>
+                                            <span class="field-chip">Indemnity</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Agreements - RevOps Terms Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Customer Agreements - RevOps Terms</h3>
+                                <p class="workflow-card-desc">Best suited for understanding revenue operations terms in customer agreements.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Term and Renewal</span>
+                                            <span class="field-chip">Does the agreement auto renew?</span>
+                                            <span class="field-chip">Can the agreement be terminated for convenience?</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Pricing (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Pricing</span>
+                                            <span class="field-chip">Price Increases/Escalation</span>
+                                            <span class="field-chip">Inflation Adjustment</span>
+                                            <span class="field-chip">Discounts</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Payment (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Upfront/Initial Payments</span>
+                                            <span class="field-chip">Non-Refundable Amounts</span>
+                                            <span class="field-chip">Payment Due Dates</span>
+                                            <span class="field-chip">Interest on Overdue Payments</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Invoice/Purchase Order Requirements (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Invoice Frequency</span>
+                                            <span class="field-chip">Invoice Requirements</span>
+                                            <span class="field-chip">Billing Address</span>
+                                            <span class="field-chip">Purchase Order Requirements</span>
+                                            <span class="field-chip">Minimum Purchase Amounts</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (12)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Publicity</span>
+                                            <span class="field-chip">Can the agreement be assigned?</span>
+                                            <span class="field-chip">Change of Control</span>
+                                            <span class="field-chip">Exclusivity</span>
+                                            <span class="field-chip">Non-Compete</span>
+                                            <span class="field-chip">Non-Solicit</span>
+                                            <span class="field-chip">Most Favored Nation</span>
+                                            <span class="field-chip">Confidentiality</span>
+                                            <span class="field-chip">Force Majeure</span>
+                                            <span class="field-chip">Amendment</span>
+                                            <span class="field-chip">Can notice be given electronically?</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vendor/Supplier Agreements Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Vendor/Supplier Agreements</h3>
+                                <p class="workflow-card-desc">Best suited for understanding terms in vendor and supplier agreements.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Term and Renewal</span>
+                                            <span class="field-chip">Does the agreement auto renew?</span>
+                                            <span class="field-chip">Can the agreement be terminated for convenience?</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Pricing (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Pricing</span>
+                                            <span class="field-chip">Price Increases/Escalation</span>
+                                            <span class="field-chip">Inflation Adjustment</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Payment (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Upfront/Initial Payments</span>
+                                            <span class="field-chip">Non-Refundable Amounts</span>
+                                            <span class="field-chip">Payment Due Dates</span>
+                                            <span class="field-chip">Interest on Overdue Payments</span>
+                                            <span class="field-chip">Minimum Purchase Amounts</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Shipping/Delivery (2)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Purchase Order Changes/Cancellation</span>
+                                            <span class="field-chip">Shipping/Delivery Terms</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Product/Service Requirements (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Service Level</span>
+                                            <span class="field-chip">Change Control/Change Management</span>
+                                            <span class="field-chip">Insurance</span>
+                                            <span class="field-chip">Warranty</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (9)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Confidentiality</span>
+                                            <span class="field-chip">Force Majeure</span>
+                                            <span class="field-chip">Arbitration</span>
+                                            <span class="field-chip">Foreign Corrupt Practices Act Compliance</span>
+                                            <span class="field-chip">Anti-Terrorism Law Compliance</span>
+                                            <span class="field-chip">Most Favored Nation</span>
+                                            <span class="field-chip">Limitation of Liability</span>
+                                            <span class="field-chip">Indemnity</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Employment Agreements Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">Employment Agreements</h3>
+                                <p class="workflow-card-desc">Use this workflow to identify common employment agreement provisions.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Employment Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Parties</span>
+                                            <span class="field-chip">Date</span>
+                                            <span class="field-chip">Employee Name</span>
+                                            <span class="field-chip">Position/Title</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Salary/Bonus (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Base Salary</span>
+                                            <span class="field-chip">Bonus/Commission</span>
+                                            <span class="field-chip">Option/Equity Grant</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Initial Term</span>
+                                            <span class="field-chip">Start Date — Employment</span>
+                                            <span class="field-chip">Notice of Termination Without Cause or Good Reason</span>
+                                            <span class="field-chip">Pay in Lieu of Notice</span>
+                                            <span class="field-chip">Severance Payments and Benefits</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Non-Compete</span>
+                                            <span class="field-chip">Non-Solicit</span>
+                                            <span class="field-chip">Non-Disparagement</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LeaseLens - Short Form (UK) Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">LeaseLens - Short Form (UK)</h3>
+                                <p class="workflow-card-desc">Best suited for understanding the basic information in a UK lease.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Real Estate Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Landlord</span>
+                                            <span class="field-chip">Tenant</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Property Basics/Information (2)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Leased/Demised Premises</span>
+                                            <span class="field-chip">Square Footage of Premises</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Lease Term</span>
+                                            <span class="field-chip">Break Provision — Date/Notice/Conditions</span>
+                                            <span class="field-chip">Renewal — Lease</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Use of Property (2)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Permitted Use</span>
+                                            <span class="field-chip">Parking — England</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Rent and Expenses (6)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Base/Principal Rent</span>
+                                            <span class="field-chip">Default Interest — England</span>
+                                            <span class="field-chip">Utilities — Obligation to Pay</span>
+                                            <span class="field-chip">Value-Added Tax — Obligation to Pay</span>
+                                            <span class="field-chip">Outgoings/Rates</span>
+                                            <span class="field-chip">Rent Free Period — Rent Commencement Date (Definition)</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Other Obligations (3)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Repairing Obligations</span>
+                                            <span class="field-chip">Insurance Obligations — Tenant's Obligations</span>
+                                            <span class="field-chip">Insurance Obligations — Landlord's Obligations</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (1)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Notice — England</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LeaseLens - Long Form (UK) Card -->
+                        <div class="workflow-card-item">
+                            <div class="workflow-card-content">
+                                <h3 class="workflow-card-title">LeaseLens - Long Form (UK)</h3>
+                                <p class="workflow-card-desc">Expands upon the short form version by providing additional information in a UK lease.</p>
+                                <button class="btn-copy-template">Copy Template</button>
+                            </div>
+                            <div class="workflow-recommended">
+                                <span class="recommended-label">Recommended for use on:</span>
+                                <div class="recommended-tags">
+                                    <span class="tag-chip">Real Estate Agt</span>
+                                </div>
+                            </div>
+                            <div class="workflow-fields">
+                                <div class="fields-details">
+                                    <div class="field-category">
+                                        <div class="category-header">Basic Information (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Title</span>
+                                            <span class="field-chip">Landlord</span>
+                                            <span class="field-chip">Tenant</span>
+                                            <span class="field-chip">Date</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Property Basics/Information (2)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Leased/Demised Premises</span>
+                                            <span class="field-chip">Square Footage of Premises</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Term and Termination (4)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Lease Term</span>
+                                            <span class="field-chip">Break Provision — Date/Notice/Conditions</span>
+                                            <span class="field-chip">End of Term Obligations</span>
+                                            <span class="field-chip">Renewal — Lease</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Use of Property (7)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Permitted Use</span>
+                                            <span class="field-chip">Parking — England</span>
+                                            <span class="field-chip">Decoration</span>
+                                            <span class="field-chip">Permitted/Prohibited Alterations</span>
+                                            <span class="field-chip">Quiet Enjoyment</span>
+                                            <span class="field-chip">Forfeiture/Events of Default</span>
+                                            <span class="field-chip">Right to Enter/Right of Inspection — England</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Rent and Expenses (10)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Base/Principal Rent</span>
+                                            <span class="field-chip">Default Interest — England</span>
+                                            <span class="field-chip">Utilities — Obligation to Pay</span>
+                                            <span class="field-chip">Value-Added Tax — Obligation to Pay</span>
+                                            <span class="field-chip">Outgoings/Rates</span>
+                                            <span class="field-chip">Rent Free Period — Rent Commencement Date (Definition)</span>
+                                            <span class="field-chip">Rent Free Period — Peppercorn Rent</span>
+                                            <span class="field-chip">Rent Review — Basis</span>
+                                            <span class="field-chip">Rent Review — Date</span>
+                                            <span class="field-chip">Rent Review — Disregards</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Transfer Provisions (5)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Assignment — Permitted/Prohibited</span>
+                                            <span class="field-chip">Assignment — Conditions</span>
+                                            <span class="field-chip">Assignment — Circumstances</span>
+                                            <span class="field-chip">Underletting — Permitted/Prohibited</span>
+                                            <span class="field-chip">Underletting — Circumstances/Conditions</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Other Obligations (7)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Repairing Obligations</span>
+                                            <span class="field-chip">Insurance Obligations — Tenant's Obligations</span>
+                                            <span class="field-chip">Insurance Obligations — Landlord's Obligations</span>
+                                            <span class="field-chip">Insurance Obligations — Insurance Rent</span>
+                                            <span class="field-chip">Insurance Obligations — Reinstatement</span>
+                                            <span class="field-chip">Insurance Obligations — Rent Cesser</span>
+                                            <span class="field-chip">Insurance Obligations — Termination on Damage and Destruction</span>
+                                        </div>
+                                    </div>
+                                    <div class="field-category">
+                                        <div class="category-header">Boilerplate Provisions (2)</div>
+                                        <div class="field-chips">
+                                            <span class="field-chip">Notice — England</span>
+                                            <span class="field-chip">Governing Law</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Create Workflow Page (Hidden by default) -->
+            <main class="page-content" id="create-workflow-page" style="display: none;">
+                <div class="create-workflow-header">
+                    <a href="/workflows" class="return-link">
+                        <span class="material-icons">arrow_back</span>
+                        Return to Workflows
+                    </a>
+                </div>
+                
+                <div class="create-workflow-container">
+                    <div class="step-indicator">
+                        <span class="step-text">Step 1 of 5</span>
+                    </div>
+                    
+                    <h1 class="create-workflow-title">Name Your Workflow</h1>
+                    <p class="create-workflow-subtitle">To get started, provide a unique name for your workflow.</p>
+                    
+                    <form class="create-workflow-form">
+                        <div class="form-group">
+                            <label for="workflow-name" class="form-label">Name</label>
+                            <input
+                                type="text"
+                                id="workflow-name"
+                                class="form-input"
+                                maxlength="75"
+                                placeholder="Enter workflow name..."
+                            >
+                            <div class="character-counter">
+                                <span id="char-count">0</span>/75 characters
+                            </div>
+                        </div>
+                        
+                        <div class="form-navigation">
+                            <button type="button" class="btn-secondary workflow-back">Back</button>
+                            <button type="button" class="btn-primary workflow-next">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+            
+            <!-- Create Workflow Step 2 Page (Hidden by default) -->
+            <main class="page-content" id="create-workflow-step2-page" style="display: none;">
+                <div class="create-workflow-header">
+                    <a href="/workflows" class="return-link">
+                        <span class="material-icons">arrow_back</span>
+                        Return to Workflows
+                    </a>
+                </div>
+                
+                <div class="create-workflow-step2-container">
+                    <div class="step-indicator">
+                        <span class="step-text">Step 2 of 5</span>
+                    </div>
+                    
+                    <h1 class="create-workflow-title">Which fields are you reviewing?</h1>
+                    <p class="create-workflow-subtitle">A field is a data point that Analyze will search for when the workflow is applied to your documents. Add fields to your workflow by searching OMEGA's Field Library below.</p>
+                    
+                    <div class="step2-content">
+                        <!-- Left Panel: Selected Fields -->
+                        <div class="selected-fields-panel">
+                            <h3 class="panel-title">Fields in this Workflow</h3>
+                            <p class="panel-subtitle" id="selected-fields-count">3 fields selected</p>
+                            
+                            <div id="selected-fields-list" class="selected-fields-list">
+                                <!-- Selected fields will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Right Panel: Field Search -->
+                        <div class="field-search-panel">
+                            <h3 class="panel-title">Field Search</h3>
+                            
+                            <div class="field-search-bar">
+                                <input 
+                                    type="text" 
+                                    id="field-search-input" 
+                                    class="search-input" 
+                                    placeholder="Search fields..."
+                                >
+                                <button id="field-search-button" class="btn-search">
+                                    Search
+                                </button>
+                            </div>
+                            
+                            <div class="pagination-info">
+                                <div class="rows-per-page">
+                                    <label>Rows per page:</label>
+                                    <select id="fields-per-page-select">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <span id="pagination-info">1–10 of 95</span>
+                                <div class="pagination-controls">
+                                    <button id="prev-page" disabled>‹</button>
+                                    <span id="current-page" class="current-page">1</span>
+                                    <button id="next-page">›</button>
+                                </div>
+                            </div>
+
+                            <div id="field-list" class="field-list">
+                                <!-- Fields will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step2-navigation">
+                        <button type="button" class="btn-secondary step2-back">Back</button>
+                        <button type="button" class="btn-primary step2-next">Next</button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Create Field Group Dialog -->
+            <div id="dialog-overlay" class="dialog-overlay" style="display: none;"></div>
+            <div id="create-group-dialog" class="create-group-dialog" style="display: none;">
+                <h3>Create New Field Group</h3>
+                <div class="form-group">
+                    <label for="group-name-input">Group Name</label>
+                    <input type="text" id="group-name-input" class="form-input" placeholder="Enter group name...">
+                </div>
+                <div class="dialog-actions">
+                    <button class="btn-secondary" id="cancel-group-btn">Cancel</button>
+                    <button class="btn-primary" id="create-group-btn">Create</button>
+                </div>
+            </div>
+
+            <!-- Create Workflow Step 3 Page (Hidden by default) -->
+            <main class="page-content" id="create-workflow-step3-page" style="display: none;">
+                <div class="create-workflow-header">
+                    <a href="/workflows" class="return-link">
+                        <span class="material-icons">arrow_back</span>
+                        Return to Workflows
+                    </a>
+                </div>
+                
+                <div class="create-workflow-step3-container">
+                    <div class="step-indicator">
+                        <span class="step-text">Step 3 of 5</span>
+                    </div>
+                    
+                    <h1 class="create-workflow-title">Enter Additional Info</h1>
+                    <p class="create-workflow-subtitle">Provide an optional description for your workflow and indicate the document types that this workflow applies to.</p>
+                    
+                    <form class="create-workflow-form">
+                        <div class="form-group">
+                            <label for="workflow-description" class="form-label">Description</label>
+                            <textarea 
+                                id="workflow-description" 
+                                class="form-textarea" 
+                                placeholder="Describe this workflow."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="document-types" class="form-label">Document Types</label>
+                            <div class="custom-dropdown" id="document-types-dropdown">
+                                <div class="dropdown-button" id="document-types-button">
+                                    <span class="dropdown-text">Select document types</span>
+                                    <span class="material-icons dropdown-icon">keyboard_arrow_down</span>
+                                </div>
+                                <div class="dropdown-menu" id="document-types-menu">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="form-help-text">
+                                Analyze will suggest this workflow for documents that match the types you select.
+                            </div>
+                            <div id="selected-doc-types" class="selected-types-container">
+                                <!-- Selected document types will appear here as chips -->
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="form-navigation">
+                        <button type="button" class="btn-secondary workflow-step3-back">Back</button>
+                        <button type="button" class="btn-primary workflow-step3-next">Next</button>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Create Workflow Step 4 Page (Hidden by default) -->
+            <main class="page-content" id="create-workflow-step4-page" style="display: none;">
+                <div class="create-workflow-header">
+                    <a href="/workflows" class="return-link">
+                        <span class="material-icons">arrow_back</span>
+                        Return to Workflows
+                    </a>
+                </div>
+
+                <div class="create-workflow-step4-container">
+                    <div class="step-indicator">
+                        <span class="step-text">Step 4 of 5</span>
+                    </div>
+
+                    <h1 class="create-workflow-title">Which criteria do you want to flag?</h1>
+                    <p class="create-workflow-subtitle">Analyze helps prioritize document review by assigning scores based on critical information found in your documents.</p>
+
+                    <!-- Coming Soon Message -->
+                    <div style="text-align: center; padding: 80px 20px; background: #f9fafb; border-radius: 8px; margin: 40px 0;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🚧</div>
+                        <h2 style="color: #1f2937; margin-bottom: 12px; font-size: 24px;">Feature Coming Soon</h2>
+                        <p style="color: #6b7280; font-size: 16px; max-width: 500px; margin: 0 auto 30px; line-height: 1.6;">
+                            Scoring criteria functionality is currently under development.
+                            You can skip this step for now and continue with your workflow creation.
+                        </p>
+                    </div>
+
+                    <div class="workflow-navigation-footer">
+                        <button type="button" class="btn-secondary workflow-step4-back">
+                            <span class="material-icons">arrow_back</span>
+                            Back
+                        </button>
+                        <button type="button" class="btn-primary workflow-step4-next">
+                            Skip This Step
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Create Workflow Step 5 Page (Hidden by default) -->
+            <main class="page-content" id="create-workflow-step5-page" style="display: none;">
+                <div class="create-workflow-header">
+                    <a href="/workflows" class="return-link">
+                        <span class="material-icons">arrow_back</span>
+                        Return to Workflows
+                    </a>
+                </div>
+
+                <div class="create-workflow-step5-container">
+                    <div class="step-indicator">
+                        <span class="step-text">Step 5 of 5</span>
+                    </div>
+
+                    <h1 class="create-workflow-title">Review Your Workflow</h1>
+
+                    <!-- Workflow Name Section -->
+                    <div class="review-section">
+                        <div class="section-header">
+                            <label class="section-label">Workflow Name:</label>
+                            <div class="section-actions">
+                                <button class="btn-text" id="save-name-btn">Save</button>
+                                <button class="btn-text" id="cancel-name-btn">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="workflow-name-edit">
+                            <input type="text" id="review-workflow-name" class="workflow-name-input" maxlength="75">
+                            <div class="character-count">
+                                <span id="review-name-count">0</span>/75 characters
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fields Section -->
+                    <div class="review-section">
+                        <div class="section-header">
+                            <span class="section-label">This workflow will search for:</span>
+                            <button class="btn-text" id="edit-fields-btn">
+                                <span class="material-icons">edit</span>
+                                Edit Fields
+                            </button>
+                        </div>
+                        <div class="fields-review" id="fields-review">
+                            <!-- Field categories will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Scoring Criteria Section -->
+                    <div class="review-section">
+                        <div class="section-header">
+                            <span class="section-label">The following criteria will be used to flag certain provisions:</span>
+                            <button class="btn-text" id="edit-scoring-btn">
+                                <span class="material-icons">edit</span>
+                                Edit Scoring
+                            </button>
+                        </div>
+                        <div class="scoring-review" id="scoring-review">
+                            <!-- Scoring criteria will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Description Section -->
+                    <div class="review-section">
+                        <div class="section-header">
+                            <span class="section-label">Here's your description of this workflow:</span>
+                            <button class="btn-text" id="edit-description-btn">
+                                <span class="material-icons">edit</span>
+                                Edit Description
+                            </button>
+                        </div>
+                        <div class="description-review">
+                            <p id="review-description-text"></p>
+                        </div>
+                    </div>
+
+                    <!-- Document Types Section -->
+                    <div class="review-section">
+                        <div class="section-header">
+                            <span class="section-label">Analyze will suggest this workflow for the following document types:</span>
+                            <button class="btn-text" id="edit-document-types-btn">
+                                <span class="material-icons">edit</span>
+                                Edit Document Types
+                            </button>
+                        </div>
+                        <div class="document-types-review" id="document-types-review">
+                            <!-- Document type chips will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="workflow-navigation-footer">
+                        <button type="button" class="btn-secondary workflow-step5-back">Back</button>
+                        <button type="button" class="btn-primary workflow-step5-save">Save</button>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Field Discovery Page (Hidden by default) -->
+            <main class="page-content" id="field-discovery-page" style="display: none;">
+                <div class="field-discovery-header">
+                    <div class="header-top">
+                        <div class="header-left">
+                            <button class="back-button">
+                                <span class="material-icons">chevron_left</span>
+                            </button>
+                            <h1 class="page-title">Field Discovery</h1>
+                        </div>
+                        <div class="header-right">
+                            <div class="org-info">
+                                <span class="org-name">Test</span>
+                                <a href="#" class="switch-org-link">
+                                    <span>Switch Organization</span>
+                                    <span class="material-icons">arrow_forward</span>
+                                </a>
+                            </div>
+                            <button class="submit-feedback-btn">Submit Feedback</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tabs-section">
+                        <div class="field-tabs">
+                            <button class="field-tab active" data-tab="search-filter">Search & Filter</button>
+                            <button class="field-tab" data-tab="field-recommender">Field Recommender</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="field-discovery-content">
+                    <!-- Search & Filter Tab Content -->
+                    <div class="tab-content active" id="search-filter-content">
+                        <div class="search-section">
+                            <div class="search-bar">
+                                <input 
+                                    type="text" 
+                                    id="field-discovery-search" 
+                                    class="search-input-field" 
+                                    placeholder="Search by Name, Description, or ID"
+                                >
+                                <button class="search-btn">Search</button>
+                                <div class="search-controls">
+                                    <button class="filters-btn">
+                                        <span>Filters</span>
+                                        <span class="material-icons">keyboard_arrow_down</span>
+                                    </button>
+                                    <button class="reset-btn">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="results-section">
+                            <div class="results-header">
+                                <div class="results-info">
+                                    <span id="results-count" class="results-count">1354 Results</span>
+                                    <div class="sort-control">
+                                        <label>Sort by</label>
+                                        <select id="sort-select" class="sort-dropdown">
+                                            <option value="alphabetical">Alphabetically (A-Z)</option>
+                                            <option value="relevance">Relevance</option>
+                                            <option value="type">Type</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="download-file-btn">
+                                    <span class="material-icons">download</span>
+                                    <span>Download File</span>
+                                </button>
+                            </div>
+                            
+                            <div id="field-results-list" class="field-results-list">
+                                <!-- Field results will be populated by JavaScript -->
+                            </div>
+                            
+                            <div class="field-pagination">
+                                <div class="pagination-left">
+                                    <label>Rows per page:</label>
+                                    <select id="rows-per-page" class="rows-select">
+                                        <option value="10" selected>10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                <div class="pagination-right">
+                                    <span id="page-info" class="page-info">1-10 of 1354</span>
+                                    <div class="pagination-nav">
+                                        <button id="prev-page-btn" class="page-nav-btn" disabled>
+                                            <span class="material-icons">chevron_left</span>
+                                        </button>
+                                        <button id="next-page-btn" class="page-nav-btn">
+                                            <span class="material-icons">chevron_right</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Field Recommender Tab Content -->
+                    <div class="tab-content" id="field-recommender-content">
+                        <div class="recommender-content">
+                            <p>Field Recommender functionality would be implemented here.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Workflow Assignment Modal -->
+    <!-- Assign Workflow Modal -->
+    <div id="assign-workflow-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Assign Workflows to <span id="assign-doc-count">X</span> document<span id="assign-doc-plural">s</span></h2>
+                <button class="modal-close" id="close-assign-modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="workflow-section">
+                    <h3>Available Workflows from Your Workflows</h3>
+                    <div id="assign-available-workflows" class="workflow-cards">
+                        <!-- Available workflows will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-text" id="cancel-assign-btn">Cancel</button>
+                <button class="btn-primary" id="save-assign-btn">Assign Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Workflow Modal -->
+    <div id="remove-workflow-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Remove Workflows from <span id="remove-doc-count">X</span> document<span id="remove-doc-plural">s</span></h2>
+                <button class="modal-close" id="close-remove-modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="workflow-section">
+                    <h3>Currently Assigned Workflows</h3>
+                    <div id="remove-assigned-workflows" class="workflow-cards">
+                        <!-- Assigned workflows will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-text" id="cancel-remove-btn">Cancel</button>
+                <button class="btn-primary" id="save-remove-btn">Remove Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Documents</h2>
+                <button class="modal-close" id="close-upload-modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="drop-zone" class="drop-zone">
+                    <span class="material-icons drop-icon">cloud_upload</span>
+                    <p class="drop-text">Drag and drop files here or</p>
+                    <button class="btn-secondary" id="browse-files-btn">Browse Files</button>
+                    <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.txt" style="display: none;">
+                    <p class="file-types">Supported files: PDF, DOCX, DOC, XLSX, XLS, TXT</p>
+                </div>
+                <div id="file-list" class="file-list" style="display: none;">
+                    <h3>Selected Files</h3>
+                    <div id="file-items"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-text" id="cancel-upload-btn">Cancel</button>
+                <button class="btn-primary" id="upload-btn" disabled>Upload Files</button>
+            </div>
+            <div id="upload-progress" class="upload-progress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="progress-text" id="progress-text">Uploading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Document Modal -->
+    <div id="rename-document-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Rename Document</h2>
+                <button class="modal-close" id="close-rename-modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="new-document-name" class="form-label">Document Name</label>
+                    <input
+                        type="text"
+                        id="new-document-name"
+                        class="form-input"
+                        maxlength="255"
+                        placeholder="Enter new document name..."
+                    >
+                    <div class="character-counter">
+                        <span id="rename-char-count">0</span>/255 characters
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-text" id="cancel-rename-btn">Cancel</button>
+                <button class="btn-primary" id="save-rename-btn" disabled>Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-document-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Delete <span id="delete-doc-count">X</span> Document<span id="delete-doc-plural">s</span>?</h2>
+                <button class="modal-close" id="close-delete-modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <span class="material-icons warning-icon">warning</span>
+                    <p>This action cannot be undone. The following document<span id="delete-warning-plural">s</span> will be permanently deleted:</p>
+                </div>
+                <div id="delete-document-list" class="delete-document-list">
+                    <!-- Documents to delete will be listed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-text" id="cancel-delete-btn">Cancel</button>
+                <button class="btn-primary btn-danger" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="js/api.js?v=20251010-v2"></script>
+    <script src="js/auth.js?v=20251016-v1"></script>
+    <script src="js/upload.js?v=20251016-v3"></script>
+    <script src="js/app.js?v=20251016-v5"></script>
+    <script src="js/workflow-assignment.js?v=20251016-v3"></script>
+    <script src="js/file-operations.js?v=20251017-v1"></script>
+
+    <!-- Scoring System JavaScript -->
+    <script src="js/scoring-data.js?v=20251018-v1"></script>
+    <script src="js/scoring-ui.js?v=20251018-v1"></script>
+    <script src="js/scoring-events.js?v=20251018-v1"></script>
+</body>
+</html>

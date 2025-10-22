@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: pe-dashboard-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - API_BASE_URL=https://app.ardour.work/api
+    networks:
+      - pe-dashboard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: pe-dashboard-frontend
+    restart: unless-stopped
+    environment:
+      - VITE_API_BASE_URL=https://app.ardour.work/api
+      - VITE_RESEARCH_API_URL=https://app.ardour.work
+      - VITE_APP_ENV=development
+      - NODE_ENV=development
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend/src:/app/src:cached
+      - ./frontend/public:/app/public:cached
+      - ./frontend/index.html:/app/index.html:cached
+      - ./frontend/vite.config.ts:/app/vite.config.ts:cached
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js:cached
+      - ./frontend/postcss.config.js:/app/postcss.config.js:cached
+      - ./frontend/tsconfig.json:/app/tsconfig.json:cached
+      # Prevent overwriting node_modules
+      - /app/node_modules
+    networks:
+      - pe-dashboard-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Research Service
+  research-service:
+    build:
+      context: ./research-service
+      dockerfile: Dockerfile
+    container_name: pe-dashboard-research
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-ardour-research}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4-turbo-preview}
+      - DEFAULT_SEARCH_PROVIDER=${DEFAULT_SEARCH_PROVIDER:-tavily}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=https://app.ardour.work,http://localhost:3000
+    networks:
+      - pe-dashboard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy
+  nginx-proxy:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: pe-dashboard-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+      - research-service
+    networks:
+      - pe-dashboard-network
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    environment:
+      - DOMAIN=app.ardour.work
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  pe-dashboard-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+
+volumes:
+  nginx-logs:
+    driver: local

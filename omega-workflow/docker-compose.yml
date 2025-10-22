@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # Vanilla JavaScript Frontend (Express Proxy Server)
+  # ========================================
+  frontend:
+    build:
+      context: ./frontend-vanilla-old
+      dockerfile: Dockerfile
+    container_name: omega-frontend-vanilla
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development  # Changed to development for hot reload
+      - PORT=3000
+      - API_URL=http://backend-fastapi:5000
+    # ✅ DEV MODE: Volume mounts for live code reload
+    volumes:
+      - ./frontend-vanilla-old:/app  # Mount source code
+      - frontend-node-modules:/app/node_modules  # Prevent overwriting node_modules
+    depends_on:
+      backend-fastapi:
+        condition: service_healthy
+    networks:
+      - omega-network
+    restart: unless-stopped
+    # ✅ DEV MODE: Use nodemon for auto-restart
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.omega.service=frontend-vanilla"
+      - "com.omega.description=Vanilla JavaScript frontend with Express proxy (DEV MODE)"
+
+  # ========================================
+  # FastAPI Backend Service
+  # ========================================
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: omega-backend-fastapi
+    ports:
+      - "5001:5000"
+    env_file:
+      - ./backend-fastapi/.env
+    environment:
+      - PORT=5000
+      - PYTHONUNBUFFERED=1
+      - JWT_SECRET=omega-workflow-jwt-secret-production
+      - DEV_MODE=true  # Skip slow startup tasks in dev mode
+    # ✅ DEV MODE: Volume mounts for live code reload
+    volumes:
+      - ./backend-fastapi:/app  # Mount source code
+      - uploads-data:/app/uploads  # Keep data persistence
+      - database-data:/app/database  # Keep data persistence
+    networks:
+      - omega-network
+    restart: unless-stopped
+    # ✅ DEV MODE: Use uvicorn --reload for auto-restart
+    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.omega.service=backend-fastapi"
+      - "com.omega.description=FastAPI Python backend (DEV MODE)"
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  omega-network:
+    driver: bridge
+    name: omega-net
+    labels:
+      - "com.omega.network=main"
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  frontend-node-modules:
+    driver: local
+    labels:
+      - "com.omega.volume=frontend-node-modules"
+  uploads-data:
+    driver: local
+    labels:
+      - "com.omega.volume=uploads"
+  database-data:
+    driver: local
+    labels:
+      - "com.omega.volume=database"

@@ -1,0 +1,551 @@
+/* ====================================
+   SCORING SYSTEM STYLES
+   ==================================== */
+
+/* Profile Tabs */
+.profiles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.profile-tab {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-tab:hover {
+    color: #374151;
+    background-color: #f9fafb;
+}
+
+.profile-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.btn-add-profile {
+    padding: 8px 16px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-add-profile:hover {
+    background-color: #1d4ed8;
+}
+
+/* Profile Content */
+.profile-content-area {
+    margin-top: 24px;
+}
+
+.profile-content {
+    display: none;
+}
+
+.profile-content.active {
+    display: block;
+}
+
+.profile-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.profile-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.profile-rename,
+.profile-delete {
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.profile-rename:hover {
+    color: #2563eb;
+}
+
+.profile-delete:hover {
+    color: #dc2626;
+}
+
+/* Criteria List */
+.criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Criterion Card */
+.criterion-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.criterion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.criterion-expand-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+}
+
+.criterion-expand-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.criterion-expand-btn .material-icons {
+    font-size: 20px;
+}
+
+.criterion-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.criterion-name-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.criterion-name-display {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.criterion-summary {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.criterion-select {
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    appearance: none;
+    cursor: pointer;
+}
+
+.criterion-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.criterion-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-criterion-save {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-criterion-save:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-criterion-cancel {
+    background-color: transparent;
+    color: #6b7280;
+}
+
+.btn-criterion-cancel:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-criterion-edit {
+    background-color: transparent;
+    color: #6b7280;
+    padding: 4px 8px;
+}
+
+.btn-criterion-edit:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-criterion-delete {
+    background-color: transparent;
+    color: #dc2626;
+    padding: 4px 8px;
+}
+
+.btn-criterion-delete:hover {
+    background-color: #fee2e2;
+}
+
+/* Criterion Body */
+.criterion-body {
+    padding: 16px;
+    display: none;
+}
+
+.criterion-card.expanded .criterion-body {
+    display: block;
+}
+
+.criterion-card.collapsed .criterion-body {
+    display: none;
+}
+
+.criterion-description {
+    margin-bottom: 16px;
+}
+
+.criterion-description label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.criterion-description-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+}
+
+.criterion-description-display {
+    padding: 12px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Filters Section */
+.filters-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.filters-section-header h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+}
+
+.btn-add-filter {
+    padding: 6px 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color 0.2s;
+}
+
+.btn-add-filter:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-add-filter .material-icons {
+    font-size: 16px;
+}
+
+/* Filter Builder */
+.filter-builder {
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.filter-builder-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 1024px) {
+    .filter-builder-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .filter-builder-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.filter-input-group {
+    position: relative;
+}
+
+.filter-select,
+.filter-input,
+.filter-date-input {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: white;
+}
+
+.filter-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    appearance: none;
+    cursor: pointer;
+}
+
+.filter-input,
+.filter-date-input {
+    padding-right: 12px;
+}
+
+.filter-builder-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.filter-builder-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-filter-add {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-filter-add:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-filter-add:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+}
+
+.btn-filter-cancel {
+    background-color: transparent;
+    color: #6b7280;
+}
+
+.btn-filter-cancel:hover {
+    color: #374151;
+}
+
+/* Filter Chips */
+.filter-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background-color: #e5e7eb;
+    color: #374151;
+    border-radius: 16px;
+    font-size: 12px;
+}
+
+.filter-chip-text {
+    line-height: 1;
+}
+
+.filter-chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.filter-chip-remove:hover {
+    background-color: #d1d5db;
+    color: #374151;
+}
+
+.filter-chip-remove .material-icons {
+    font-size: 14px;
+}
+
+.no-filters-message {
+    padding: 12px;
+    background-color: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* Criterion Summary Info */
+.criterion-summary-info {
+    padding-top: 12px;
+    margin-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+}
+
+.summary-info-item {
+    display: flex;
+    gap: 8px;
+}
+
+.summary-info-label {
+    color: #6b7280;
+}
+
+.summary-info-value {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Add Criterion Button */
+.btn-add-criterion {
+    padding: 10px 20px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-add-criterion:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-add-criterion .material-icons {
+    font-size: 18px;
+}
+
+/* Empty State */
+.empty-criteria-state {
+    padding: 48px 24px;
+    background-color: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.empty-criteria-state p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 8px 0;
+}
+
+.empty-criteria-state p:first-child {
+    font-weight: 500;
+    color: #374151;
+}

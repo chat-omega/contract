@@ -1,0 +1,259 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 248 250 252;
+    --foreground: 15 23 42;
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+    --primary: 30 41 59;
+    --primary-foreground: 248 250 252;
+    --secondary: 241 245 249;
+    --secondary-foreground: 15 23 42;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+    --accent: 245 158 11;
+    --accent-foreground: 255 255 255;
+    --destructive: 239 68 68;
+    --destructive-foreground: 248 250 252;
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 245 158 11;
+    --radius: 12px;
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-400 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+  }
+  
+  /* Thin scrollbar utility */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-slate-300;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* Financial card styling */
+  .financial-card {
+    @apply bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-xl shadow-financial;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .financial-card:hover {
+    @apply shadow-card-hover border-slate-300/50 -translate-y-1;
+  }
+
+  /* Premium gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animation classes */
+  .animate-fadeIn {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .animate-slideInRight {
+    animation: slideInRight 0.5s ease-out;
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.4s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Data visualization styles */
+  .metric-positive {
+    @apply text-success-600 bg-success-50;
+  }
+
+  .metric-negative {
+    @apply text-error-600 bg-error-50;
+  }
+
+  .metric-neutral {
+    @apply text-slate-600 bg-slate-50;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply bg-gradient-to-r from-slate-800 to-slate-700 text-white px-6 py-3 rounded-lg font-medium;
+    @apply hover:from-slate-700 hover:to-slate-600 transition-all duration-300;
+    @apply focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-slate-300 text-slate-700 px-6 py-3 rounded-lg font-medium;
+    @apply hover:bg-slate-50 hover:border-slate-400 transition-all duration-300;
+  }
+
+  /* Navigation styles */
+  .nav-item {
+    @apply relative px-4 py-2 rounded-lg transition-all duration-300;
+    @apply hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .nav-item.active {
+    @apply bg-accent-50 text-accent-700 border-l-4 border-accent-500;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .animate-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* Text shadow for better readability */
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Backdrop blur utilities */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Custom focus styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
+  }
+
+  /* Grid background pattern */
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Features Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workflow Features Test Suite</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Create Workflow Page Load</h2>
+        <button onclick="testCreateWorkflowPageLoad()">Run Test</button>
+        <div id="test1-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Workflow Creation Flow (Steps 1-5)</h2>
+        <button onclick="testWorkflowCreationFlow()">Run Test</button>
+        <div id="test2-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Template Copy Feature</h2>
+        <button onclick="testTemplateCopy()">Run Test</button>
+        <div id="test3-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Workflow Library Navigation</h2>
+        <button onclick="testWorkflowLibrary()">Run Test</button>
+        <div id="test4-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: API Endpoints</h2>
+        <button onclick="testAPIEndpoints()">Run Test</button>
+        <div id="test5-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Summary</h2>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api';
+        const APP_URL = 'http://localhost:3000';
+
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        function logResult(containerId, message, status) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            div.textContent = message;
+            container.appendChild(div);
+
+            if (status === 'pass') testResults.passed++;
+            if (status === 'fail') testResults.failed++;
+            testResults.total++;
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <div class="test-result info">
+                    <strong>Total Tests:</strong> ${testResults.total}<br>
+                    <strong>Passed:</strong> ${testResults.passed}<br>
+                    <strong>Failed:</strong> ${testResults.failed}<br>
+                    <strong>Pass Rate:</strong> ${testResults.total > 0 ? ((testResults.passed / testResults.total) * 100).toFixed(2) : 0}%
+                </div>
+            `;
+        }
+
+        async function testCreateWorkflowPageLoad() {
+            const containerId = 'test1-results';
+            document.getElementById(containerId).innerHTML = '';
+
+            try {
+                // Open the main app in a new window
+                const testWindow = window.open(APP_URL, 'testWindow');
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                if (!testWindow) {
+                    logResult(containerId, 'Failed to open test window', 'fail');
+                    return;
+                }
+
+                logResult(containerId, 'Test window opened successfully', 'pass');
+                logResult(containerId, 'Please manually check: Navigate to Create Workflow and verify no errors', 'info');
+                logResult(containerId, 'Please manually check: Verify Step 1 displays correctly', 'info');
+
+            } catch (error) {
+                logResult(containerId, `Error: ${error.message}`, 'fail');
+            }
+        }
+
+        async function testWorkflowCreationFlow() {
+            const containerId = 'test2-results';
+            document.getElementById(containerId).innerHTML = '';
+
+            logResult(containerId, 'This test requires manual verification in the main app', 'info');
+            logResult(containerId, 'Steps to test:', 'info');
+            logResult(containerId, '1. Navigate to Create Workflow', 'info');
+            logResult(containerId, '2. Enter workflow name and click Next', 'info');
+            logResult(containerId, '3. Select fields and verify selectedFields Set works', 'info');
+            logResult(containerId, '4. Add description and document types', 'info');
+            logResult(containerId, '5. Configure scoring criteria', 'info');
+            logResult(containerId, '6. Review and save', 'info');
+        }
+
+        async function testTemplateCopy() {
+            const containerId = 'test3-results';
+            document.getElementById(containerId).innerHTML = '';
+
+            try {
+                // Test if workflows endpoint is accessible
+                const response = await fetch(`${API_BASE}/workflows`);
+                const data = await response.json();
+
+                logResult(containerId, `Workflows API accessible: ${response.status === 200 ? 'PASS' : 'FAIL'}`,
+                         response.status === 200 ? 'pass' : 'fail');
+
+                if (data.workflows && Array.isArray(data.workflows)) {
+                    const templates = data.workflows.filter(w => w.is_template);
+                    logResult(containerId, `Found ${templates.length} template workflows`, 'info');
+
+                    if (templates.length > 0) {
+                        logResult(containerId, `Templates: ${templates.map(t => t.name).join(', ')}`, 'info');
+                    }
+                }
+
+                logResult(containerId, 'Manual test: Click Copy Template on M&A template in Workflow Library', 'info');
+
+            } catch (error) {
+                logResult(containerId, `API Error: ${error.message}`, 'fail');
+            }
+        }
+
+        async function testWorkflowLibrary() {
+            const containerId = 'test4-results';
+            document.getElementById(containerId).innerHTML = '';
+
+            logResult(containerId, 'Manual test: Navigate to Workflow Library', 'info');
+            logResult(containerId, 'Manual test: Switch between Your Workflows and Workflow Library tabs', 'info');
+            logResult(containerId, 'Manual test: Verify both tabs display correctly', 'info');
+        }
+
+        async function testAPIEndpoints() {
+            const containerId = 'test5-results';
+            document.getElementById(containerId).innerHTML = '';
+
+            try {
+                // Test health endpoint
+                let response = await fetch(`${API_BASE}/health`);
+                let data = await response.json();
+                logResult(containerId, `Health endpoint: ${data.status === 'healthy' ? 'PASS' : 'FAIL'}`,
+                         data.status === 'healthy' ? 'pass' : 'fail');
+
+                // Test workflows endpoint
+                response = await fetch(`${API_BASE}/workflows`);
+                data = await response.json();
+                logResult(containerId, `Workflows endpoint: ${response.status === 200 ? 'PASS' : 'FAIL'}`,
+                         response.status === 200 ? 'pass' : 'fail');
+
+                if (data.workflows) {
+                    logResult(containerId, `Total workflows: ${data.workflows.length}`, 'info');
+                    logResult(containerId, `User workflows: ${data.workflows.filter(w => !w.is_template).length}`, 'info');
+                    logResult(containerId, `Templates: ${data.workflows.filter(w => w.is_template).length}`, 'info');
+                }
+
+                // Test fields endpoint
+                response = await fetch(`${API_BASE}/fields`);
+                data = await response.json();
+                logResult(containerId, `Fields endpoint: ${response.status === 200 ? 'PASS' : 'FAIL'}`,
+                         response.status === 200 ? 'pass' : 'fail');
+
+                if (data.fields) {
+                    logResult(containerId, `Total fields available: ${data.fields.length}`, 'info');
+                }
+
+                // Test scoring profiles endpoint
+                response = await fetch(`${API_BASE}/scoring-profiles`);
+                data = await response.json();
+                logResult(containerId, `Scoring profiles endpoint: ${response.status === 200 ? 'PASS' : 'FAIL'}`,
+                         response.status === 200 ? 'pass' : 'fail');
+
+                if (data.profiles) {
+                    logResult(containerId, `Available scoring profiles: ${Object.keys(data.profiles).length}`, 'info');
+                }
+
+            } catch (error) {
+                logResult(containerId, `API Error: ${error.message}`, 'fail');
+            }
+        }
+
+        // Reset test results
+        testResults = { passed: 0, failed: 0, total: 0 };
+        updateSummary();
+    </script>
+</body>
+</html>
