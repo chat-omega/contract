@@ -82,27 +82,27 @@ describe('StrategiesTab', () => {
     expect(screen.getByText('$25M-$50M')).toBeInTheDocument();
   });
 
-  it('keeps not recommended section collapsed by default', () => {
+  it('keeps not recommended section expanded by default', () => {
     render(<StrategiesTab />);
-    expect(screen.queryByText('Acquire large-scale hardware-only fitness tracker OEMs')).not.toBeInTheDocument();
-    expect(screen.queryByText('Buy pure-play consumer fitness/wellness apps with no clinical/data/IP differentiation')).not.toBeInTheDocument();
+    expect(screen.getByText('Acquire large-scale hardware-only fitness tracker OEMs')).toBeInTheDocument();
+    expect(screen.getByText('Buy pure-play consumer fitness/wellness apps with no clinical/data/IP differentiation')).toBeInTheDocument();
   });
 
   it('toggles not recommended section when clicked', () => {
     render(<StrategiesTab />);
     const notRecommendedButton = screen.getByRole('button', { name: /not recommended/i });
 
-    // Should be collapsed initially
-    expect(screen.queryByText('Acquire large-scale hardware-only fitness tracker OEMs')).not.toBeInTheDocument();
-
-    // Click to expand
-    fireEvent.click(notRecommendedButton);
+    // Should be expanded initially
     expect(screen.getByText('Acquire large-scale hardware-only fitness tracker OEMs')).toBeInTheDocument();
-    expect(screen.getByText('Buy pure-play consumer fitness/wellness apps with no clinical/data/IP differentiation')).toBeInTheDocument();
 
     // Click to collapse
     fireEvent.click(notRecommendedButton);
     expect(screen.queryByText('Acquire large-scale hardware-only fitness tracker OEMs')).not.toBeInTheDocument();
+    expect(screen.queryByText('Buy pure-play consumer fitness/wellness apps with no clinical/data/IP differentiation')).not.toBeInTheDocument();
+
+    // Click to expand
+    fireEvent.click(notRecommendedButton);
+    expect(screen.getByText('Acquire large-scale hardware-only fitness tracker OEMs')).toBeInTheDocument();
   });
 
   it('renders action buttons on acquisition cards', () => {

@@ -10,7 +10,7 @@
 
 /* Left Sidebar */
 .document-sidebar {
-    width: 480px;
+    width: 420px;
     background: #fff;
     border-right: 1px solid #e0e0e0;
     display: flex;
@@ -50,7 +50,7 @@
 }
 
 .document-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: #212121;
     margin: 0;
@@ -71,7 +71,7 @@
 }
 
 .section-header h3 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #212121;
     margin: 0;
@@ -114,18 +114,50 @@
 }
 
 .workflow-name label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: #666;
 }
 
+.workflow-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .workflow-select {
+    flex: 1;  /* Take remaining space */
     padding: 8px 12px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     background: #fff;
     cursor: pointer;
+}
+
+/* Compact Export button next to workflow */
+.workflow-row .btn-export {
+    background: #1976d2;
+    color: #fff;
+    border: 1px solid #1976d2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.workflow-row .btn-export:hover {
+    background: #1565c0;
+    border-color: #1565c0;
+}
+
+.workflow-row .btn-export .material-icons {
+    font-size: 16px;
 }
 
 .reviewers-section {
@@ -142,7 +174,7 @@
 }
 
 .reviewers-section label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: #666;
 }
@@ -164,7 +196,7 @@
 }
 
 .no-reviewers {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
     margin: 0;
 }
@@ -175,7 +207,24 @@
     flex-wrap: wrap;
 }
 
-.btn-edit-workflow,
+.btn-edit-workflow {
+    padding: 6px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #666;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-edit-workflow .material-icons {
+    font-size: 18px;
+}
+
 .btn-collapse-all,
 .btn-expand-all {
     padding: 6px 12px;
@@ -216,7 +265,7 @@
 }
 
 .category-header {
-    padding: 12px 16px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -245,7 +294,7 @@
 }
 
 .category-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: #212121;
     flex: 1;
@@ -278,7 +327,7 @@
 }
 
 .term-item {
-    padding: 12px 16px 12px 48px;
+    padding: 10px 12px 10px 40px;
     border-bottom: 1px solid #f0f0f0;
     display: flex;
     align-items: flex-start;
@@ -291,12 +340,67 @@
 }
 
 .term-item h4 {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: #212121;
     margin: 0;
     line-height: 1.4;
     flex: 1;
+}
+
+.term-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.term-value {
+    font-size: 11px;
+    color: #424242;
+    line-height: 1.4;
+}
+
+.term-item-actions {
+    display: flex;
+    gap: 4px;
+    align-items: flex-start;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.term-item:hover .term-item-actions {
+    opacity: 1;
+}
+
+.btn-term-edit,
+.btn-term-delete {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #666;
+}
+
+.btn-term-edit:hover {
+    background: rgba(25, 118, 210, 0.1);
+    color: #1976d2;
+}
+
+.btn-term-delete:hover {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.btn-term-edit .material-icons,
+.btn-term-delete .material-icons {
+    font-size: 16px;
 }
 
 .term-actions {
@@ -330,86 +434,72 @@
     overflow: hidden;
 }
 
-.document-header {
-    padding: 16px;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    position: relative;
-}
-
-.document-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.document-timestamp {
-    font-size: 12px;
-    color: #666;
-}
-
-.document-filename {
-    font-size: 14px;
-    font-weight: 500;
-    color: #212121;
-}
-
-.document-label {
-    font-size: 12px;
-    color: #666;
-    text-align: right;
-}
-
-.close-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    color: #666;
-    transition: all 0.2s;
-    position: absolute;
-    top: 16px;
-    right: 16px;
-}
-
-.close-button:hover {
-    background: #f5f5f5;
-    color: #000;
-}
-
-.document-controls {
-    padding: 12px 16px;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.btn-export {
-    background: #1976d2;
-    color: #fff;
-    border: none;
+/* Document Toolbar - Compact top bar */
+.document-toolbar {
     padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
     display: flex;
     align-items: center;
-    gap: 6px;
-    transition: background-color 0.2s;
+    justify-content: center;  /* Center the page-display */
+    height: 40px;
+    position: relative;  /* For absolute positioning of btn-search */
 }
 
-.btn-export:hover {
-    background: #1565c0;
+.page-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #424242;
+    font-weight: 500;
 }
 
-.btn-export .material-icons {
-    font-size: 16px;
+.page-text {
+    display: inline;
 }
+
+.page-nav-btn {
+    background: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+    background: #f5f5f5;
+    border-color: #1976d2;
+}
+
+.page-nav-btn:hover:not(:disabled) .material-icons {
+    color: #1976d2;
+}
+
+.page-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-nav-btn .material-icons {
+    font-size: 20px;
+    color: #666;
+}
+
+#current-page-display {
+    color: #1976d2;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Export button moved to workflow-row - old styles removed */
 
 /* PDF Viewer */
 .pdf-viewer-container {
@@ -457,78 +547,7 @@
     100% { transform: rotate(360deg); }
 }
 
-.pdf-controls {
-    padding: 12px 16px;
-    border-top: 1px solid #e0e0e0;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-}
-
-.pdf-control-btn {
-    background: none;
-    border: 1px solid #e0e0e0;
-    padding: 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    transition: all 0.2s;
-}
-
-.pdf-control-btn:hover:not(:disabled) {
-    background: #f5f5f5;
-    border-color: #ccc;
-}
-
-.pdf-control-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.page-input-container {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 14px;
-    color: #666;
-}
-
-.page-input {
-    width: 50px;
-    padding: 4px 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 14px;
-    background: #fff;
-}
-
-.page-input:focus {
-    outline: none;
-    border-color: #1976d2;
-}
-
-.page-total {
-    color: #666;
-}
-
-.zoom-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.zoom-level {
-    font-size: 12px;
-    color: #666;
-    min-width: 40px;
-    text-align: center;
-}
+/* PDF controls removed - page info moved to toolbar */
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -549,18 +568,13 @@
         min-height: 50vh;
     }
     
-    .pdf-controls {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
+    /* PDF controls removed */
 }
 
 /* Print styles */
 @media print {
     .document-sidebar,
-    .document-header,
-    .document-controls,
-    .pdf-controls {
+    .document-toolbar {
         display: none;
     }
     
@@ -576,12 +590,12 @@
     }
 }
 
-/* Search Button */
+/* Search Button in toolbar */
 .btn-search {
     background: #4caf50;
     color: #fff;
     border: none;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 4px;
     font-size: 12px;
     cursor: pointer;
@@ -589,6 +603,8 @@
     align-items: center;
     gap: 6px;
     transition: background-color 0.2s;
+    position: absolute;  /* Position on right side */
+    right: 16px;
 }
 
 .btn-search:hover {
@@ -614,16 +630,22 @@
 }
 
 .pdf-page-container {
+    display: block !important;
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     background: #fff;
     margin-bottom: 10px;
-    width: fit-content;  /* Shrink-wrap canvas to eliminate highlighting offset */
+    /* Width and height set via JavaScript - inline styles will override */
     max-width: 100%;
+    overflow: visible;  /* Allow canvas to render properly */
 }
 
 .pdf-page-canvas {
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;  /* Below overlay (15) and text layer (20) */
 }
 
 .pdf-page-overlay {
@@ -631,6 +653,7 @@
     top: 0;
     left: 0;
     pointer-events: none;
+    z-index: 15;  /* Same as highlights, both below text layer (z-index: 20) */
 }
 
 .search-highlight {
@@ -638,6 +661,7 @@
     background: rgba(255, 255, 0, 0.4);
     border: 1px solid rgba(255, 165, 0, 0.8);
     pointer-events: none;
+    z-index: 15;  /* Same as other highlights, below text layer */
 }
 
 .search-highlight.current {
@@ -765,14 +789,14 @@
 /* Loading states for continuous scrolling */
 .pdf-page-loading {
     width: 100%;
-    height: 200px;
+    height: 100%;  /* Fill entire container to prevent black gaps */
+    min-height: 200px;  /* Minimum height fallback */
     display: flex;
     justify-content: center;
     align-items: center;
     background: #f5f5f5;
     color: #666;
     font-size: 14px;
-    margin-bottom: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -787,16 +811,15 @@
         margin: 0 10px;
     }
     
-    .document-controls {
-        flex-wrap: wrap;
+    .document-toolbar {
+        flex-direction: column;
+        height: auto;
         gap: 8px;
+        padding: 12px;
     }
-    
-    .btn-search,
-    .btn-export {
-        flex: 1;
-        justify-content: center;
-        min-width: 120px;
+
+    .btn-search {
+        width: 100%;
     }
     
     .pdf-scroll-container {
@@ -811,7 +834,7 @@
     border: 2px solid rgba(255, 235, 0, 0.6);    /* Darker yellow border */
     box-sizing: border-box;
     pointer-events: none;
-    z-index: 10;
+    z-index: 15;  /* Below text layer (z-index: 20) to not block text selection */
 }
 
 /* Pulse animation for extraction highlights */
@@ -841,34 +864,9 @@
     background-color: rgba(33, 150, 243, 0.1);
     border-radius: 3px;
 }
-/* Multi-extraction display */
-.more-extractions-toggle {
-    color: #2196F3;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500;
-    user-select: none;
-}
-
-.more-extractions-toggle:hover {
-    text-decoration: underline;
-}
-
-.additional-extractions {
+/* Field Extractions Container */
+.field-extractions {
     margin-top: 8px;
-    padding-left: 12px;
-    border-left: 2px solid #e0e0e0;
-}
-
-.extraction-item {
-    padding: 4px 0;
-    font-size: 0.95em;
-    color: #424242;
-}
-
-.extraction-item:hover {
-    background-color: rgba(33, 150, 243, 0.05);
-    border-radius: 3px;
 }
 
 /* Answer Field Styles */
@@ -988,11 +986,11 @@
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
+    /* Width and height are set via JavaScript to match canvas dimensions */
     overflow: hidden;
     line-height: 1.0;
     pointer-events: auto;
+    z-index: 20;  /* Above highlights and overlay to enable text selection */
 }
 
 .pdf-text-layer span {

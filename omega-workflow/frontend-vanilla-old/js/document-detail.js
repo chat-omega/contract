@@ -24,6 +24,7 @@ class DocumentDetailPage {
         this.scrollContainer = null;
         this.pageContainers = [];
         this.renderedPages = new Set();
+        this.pageViewports = new Map(); // Cache page viewports to avoid re-fetching
         this.searchResults = [];
         this.currentSearchIndex = -1;
         this.pageTextContent = new Map();
@@ -34,20 +35,50 @@ class DocumentDetailPage {
     }
 
     init() {
+        console.log('🚀 Initializing DocumentDetailPage...');
+
         // Get document ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const documentId = urlParams.get('id');
-        
-        if (documentId) {
-            this.loadDocument(documentId);
-        } else {
-            console.error('No document ID provided');
-            this.showError('No document specified');
+
+        if (!documentId) {
+            console.error('❌ No document ID provided');
+            this.showError('No document specified. Please provide a document ID in the URL.');
+            return; // Stop initialization
         }
 
-        this.initializeEventHandlers();
-        this.initializePDFViewer();
-        this.initializePageInput();
+        console.log(`📄 Document ID: ${documentId}`);
+
+        // Validate critical DOM elements exist
+        const criticalElements = [
+            'pdf-scroll-container',
+            'document-title',
+            'extracted-terms-container',
+            'pdf-viewer'
+        ];
+
+        const missingElements = criticalElements.filter(id => !document.getElementById(id));
+        if (missingElements.length > 0) {
+            console.error('❌ Missing critical DOM elements:', missingElements);
+            this.showError('Page structure error. Please refresh the page.');
+            return;
+        }
+
+        console.log('✅ All critical DOM elements found');
+
+        // Initialize components
+        try {
+            this.initializeEventHandlers();
+            this.initializePDFViewer();
+            this.initializePageInput();
+            console.log('✅ Event handlers and PDF viewer initialized');
+
+            // Load document data
+            this.loadDocument(documentId);
+        } catch (error) {
+            console.error('❌ Initialization error:', error);
+            this.showError('Failed to initialize page: ' + error.message);
+        }
     }
 
     initializeEventHandlers() {
@@ -57,20 +88,26 @@ class DocumentDetailPage {
             backButton.addEventListener('click', () => this.goBack());
         }
 
-        // Close button
-        const closeButton = document.getElementById('close-document');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => this.goBack());
-        }
+        // Close button removed from UI
 
         // Category toggles
         document.querySelectorAll('.category-header').forEach(header => {
-            header.addEventListener('click', (e) => {
-                if (!e.target.closest('.btn-delete, .btn-edit')) {
-                    this.toggleCategory(header);
-                }
+            header.addEventListener('click', () => {
+                this.toggleCategory(header);
             });
         });
+
+        // Collapse/Expand all buttons
+        const collapseAllBtn = document.querySelector('.btn-collapse-all');
+        const expandAllBtn = document.querySelector('.btn-expand-all');
+
+        if (collapseAllBtn) {
+            collapseAllBtn.addEventListener('click', () => this.collapseAllCategories());
+        }
+
+        if (expandAllBtn) {
+            expandAllBtn.addEventListener('click', () => this.expandAllCategories());
+        }
 
         // PDF controls
         this.initializePDFControls();
@@ -110,10 +147,22 @@ class DocumentDetailPage {
 
     initializePDFViewer() {
         this.scrollContainer = document.getElementById('pdf-scroll-container');
-        
-        // Set PDF.js worker (v5.4)
+
+        // Validate scroll container exists
+        if (!this.scrollContainer) {
+            console.error('❌ PDF scroll container not found');
+            this.showPDFError('PDF viewer container missing');
+            return;
+        }
+
+        // Set PDF.js worker (v3.11)
         if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.296/pdf.worker.min.js';
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            console.log('✅ PDF.js library loaded successfully');
+        } else {
+            console.error('❌ PDF.js library not loaded');
+            this.showPDFError('PDF viewer library failed to load. Please check your internet connection and refresh the page.');
+            return;
         }
     }
 
@@ -199,7 +248,10 @@ class DocumentDetailPage {
     }
 
     async loadDocument(documentId) {
+        let hasError = false;
         try {
+            console.log(`📥 Loading document metadata for ${documentId}...`);
+
             // Show loading state
             this.showLoading(true);
 
@@ -207,21 +259,31 @@ class DocumentDetailPage {
             const documentResponse = await fetch(`/api/documents/${documentId}`, {
                 headers: getAuthHeaders()
             });
+
+            console.log(`📊 Document metadata response status: ${documentResponse.status}`);
+
             if (!documentResponse.ok) {
                 if (documentResponse.status === 401) {
-                    window.location.href = '/login.html';
+                    console.warn('⚠️ Authentication required - redirecting to login');
+                    this.showError('Please log in to view this document');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 2000);
                     return;
                 }
-                throw new Error('Failed to load document metadata');
+                throw new Error(`Failed to load document metadata (HTTP ${documentResponse.status})`);
             }
 
             this.currentDocument = await documentResponse.json();
+            console.log('✅ Document metadata loaded:', this.currentDocument);
             this.updateDocumentInfo();
 
             // Load assigned workflows and render fields dynamically
             const workflowData = await this.loadDocumentWorkflows(documentId);
 
             if (workflowData && workflowData.workflowIds && workflowData.workflowIds.length > 0) {
+                console.log(`📋 Loading ${workflowData.workflowIds.length} workflows...`);
+
                 // Load the first workflow's details
                 const firstWorkflowId = workflowData.workflowIds[0];
                 const workflow = await this.loadWorkflowDetails(firstWorkflowId);
@@ -236,17 +298,23 @@ class DocumentDetailPage {
                     this.showTermsError('Failed to load workflow details');
                 }
             } else {
+                console.log('ℹ️ No workflows assigned to this document');
                 this.showTermsMessage('No workflows assigned to this document');
             }
 
             // Load PDF content
+            console.log('📄 Loading PDF content...');
             await this.loadPDF(documentId);
 
         } catch (error) {
-            console.error('Error loading document:', error);
-            this.showError('Failed to load document');
+            hasError = true;
+            console.error('❌ Error loading document:', error);
+            this.showError('Failed to load document: ' + error.message);
         } finally {
-            this.showLoading(false);
+            // Only hide loading if no error occurred
+            if (!hasError) {
+                this.showLoading(false);
+            }
         }
     }
 
@@ -444,7 +512,7 @@ class DocumentDetailPage {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'term-category';
 
-        // Create category header
+        // Create category header (without delete/edit buttons - those are for individual fields only)
         const headerDiv = document.createElement('div');
         headerDiv.className = 'category-header';
         headerDiv.dataset.category = categoryName.toLowerCase().replace(/\s+/g, '-');
@@ -454,10 +522,6 @@ class DocumentDetailPage {
                 <span class="material-icons">keyboard_arrow_down</span>
             </button>
             <span class="category-name">${categoryName} (${fields.length})</span>
-            <div class="category-actions">
-                <button class="btn-delete">Delete</button>
-                <button class="btn-edit">Edit</button>
-            </div>
         `;
 
         // Create category content
@@ -471,8 +535,10 @@ class DocumentDetailPage {
             termItem.dataset.fieldId = field.fieldId;
 
             termItem.innerHTML = `
-                <h4 class="term-field-name">${field.name}</h4>
-                <div class="term-value" style="color: #999; font-style: italic;">Extracting...</div>
+                <div class="term-item-content">
+                    <h4 class="term-field-name">${field.name}</h4>
+                    <div class="term-value" style="color: #999; font-style: italic;">Extracting...</div>
+                </div>
             `;
 
             contentDiv.appendChild(termItem);
@@ -491,10 +557,9 @@ class DocumentDetailPage {
             const newHeader = header.cloneNode(true);
             header.parentNode.replaceChild(newHeader, header);
 
-            newHeader.addEventListener('click', (e) => {
-                if (!e.target.closest('.btn-delete, .btn-edit')) {
-                    this.toggleCategory(newHeader);
-                }
+            // Category headers no longer have delete/edit buttons, so just toggle on click
+            newHeader.addEventListener('click', () => {
+                this.toggleCategory(newHeader);
             });
         });
     }
@@ -588,6 +653,9 @@ class DocumentDetailPage {
         // Add answer-field class to termItem
         termItem.classList.add('answer-field');
 
+        // Add delete/edit action buttons for answer fields
+        this.addTermItemActions(termItem);
+
         // Create answer options container
         const optionsContainer = document.createElement('div');
         optionsContainer.className = 'answer-options';
@@ -612,15 +680,8 @@ class DocumentDetailPage {
 
         termValueDiv.appendChild(optionsContainer);
 
-        // Display selected answer label
-        if (selectedOption) {
-            const selectedLabel = document.createElement('div');
-            selectedLabel.className = 'selected-answer-label';
-            const selectedValue = selectedAnswers[0].value;
-            selectedLabel.textContent = `Answer: ${selectedOption}) ${selectedValue}`;
-            termValueDiv.appendChild(selectedLabel);
-        } else {
-            // No answer selected - unable to determine
+        // No answer selected - show unable to determine message
+        if (!selectedOption) {
             const undeterminedDiv = document.createElement('div');
             undeterminedDiv.className = 'answer-undetermined';
             undeterminedDiv.textContent = 'Unable to determine';
@@ -672,6 +733,7 @@ class DocumentDetailPage {
 
     renderTextField(termItem, fieldData) {
         // Render text-type fields with support for multiple extractions
+        // All extractions displayed in white boxes (consistent with answer fields)
         const termValueDiv = termItem.querySelector('.term-value');
         if (!termValueDiv) return;
 
@@ -687,98 +749,91 @@ class DocumentDetailPage {
             const firstExtraction = extractions[0];
             termItem.dataset.extraction = JSON.stringify(firstExtraction);
 
-            if (extractions.length === 1) {
-                // Single extraction - display as before
-                termValueDiv.textContent = firstExtraction.text || 'Not found';
+            // Add delete/edit action buttons for fields with actual extracted text
+            this.addTermItemActions(termItem);
 
-                // Make term value clickable to highlight (will use text-search fallback if bbox unavailable)
-                if (firstExtraction.page) {
-                    termValueDiv.style.cursor = 'pointer';
-                    termValueDiv.title = firstExtraction.bbox ? 'Click to highlight in document' : 'Click to find in document (text search)';
-                    termValueDiv.addEventListener('click', async () => {
-                        await this.highlightExtraction(firstExtraction);
+            // Create container for all extractions (similar to supporting-evidence in answer fields)
+            const extractionsContainer = document.createElement('div');
+            extractionsContainer.className = 'field-extractions';
+
+            // Display ALL extractions in white boxes, visible by default
+            extractions.forEach(extraction => {
+                const extractionDiv = document.createElement('div');
+                extractionDiv.className = 'extraction-item';
+
+                const textSpan = document.createElement('span');
+                textSpan.className = 'extraction-text';
+                textSpan.textContent = extraction.text || '';
+                extractionDiv.appendChild(textSpan);
+
+                // Add page reference button
+                if (extraction.page) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = 'btn-page-ref';
+                    pageBtn.textContent = `Page ${extraction.page}`;
+                    pageBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.goToPage(extraction.page);
+                    });
+                    extractionDiv.appendChild(pageBtn);
+                }
+
+                // Make entire extraction item clickable for highlighting
+                if (extraction.page || extraction.bbox) {
+                    extractionDiv.style.cursor = 'pointer';
+                    extractionDiv.title = extraction.bbox ? 'Click to highlight in document' : 'Click to find in document (text search)';
+                    extractionDiv.addEventListener('click', async () => {
+                        await this.highlightExtraction(extraction);
                     });
                 }
 
-                // Add confidence indicator
-                if (firstExtraction.confidence !== undefined) {
-                    const confidenceSpan = document.createElement('span');
-                    confidenceSpan.className = 'confidence-indicator';
-                    confidenceSpan.style.marginLeft = '8px';
-                    confidenceSpan.style.fontSize = '0.85em';
-                    confidenceSpan.style.color = firstExtraction.confidence > 0.8 ? '#4caf50' : '#ff9800';
-                    confidenceSpan.textContent = `(${Math.round(firstExtraction.confidence * 100)}%)`;
-                    termValueDiv.appendChild(confidenceSpan);
-                }
-            } else {
-                // Multiple extractions - display with expand/collapse
-                const firstText = document.createTextNode(firstExtraction.text || 'Not found');
-                termValueDiv.appendChild(firstText);
+                extractionsContainer.appendChild(extractionDiv);
+            });
 
-                // Add "+X more" toggle
-                const toggleSpan = document.createElement('span');
-                toggleSpan.className = 'more-extractions-toggle';
-                toggleSpan.textContent = ` (+${extractions.length - 1} more)`;
-                termValueDiv.appendChild(toggleSpan);
-
-                // Create expandable section for additional extractions
-                const expandableDiv = document.createElement('div');
-                expandableDiv.className = 'additional-extractions';
-                expandableDiv.style.display = 'none';
-
-                extractions.slice(1).forEach((ext, idx) => {
-                    const extDiv = document.createElement('div');
-                    extDiv.className = 'extraction-item';
-                    extDiv.textContent = `• ${ext.text}`;
-
-                    // Make each extraction clickable for highlighting (will use fallback if bbox unavailable)
-                    if (ext.page) {
-                        extDiv.style.cursor = 'pointer';
-                        extDiv.title = ext.bbox ? `Click to highlight on page ${ext.page}` : `Click to find on page ${ext.page} (text search)`;
-                        extDiv.addEventListener('click', async () => {
-                            await this.highlightExtraction(ext);
-                        });
-                    }
-
-                    expandableDiv.appendChild(extDiv);
-                });
-
-                termValueDiv.appendChild(expandableDiv);
-
-                // Toggle handler
-                toggleSpan.addEventListener('click', () => {
-                    const isVisible = expandableDiv.style.display === 'block';
-                    expandableDiv.style.display = isVisible ? 'none' : 'block';
-                    toggleSpan.textContent = isVisible ? ` (+${extractions.length - 1} more)` : ' (show less)';
-                });
-            }
-
-            // Add page reference button if page info available
-            let pageRefBtn = termItem.querySelector('.btn-page-ref');
-            if (firstExtraction.page) {
-                if (!pageRefBtn) {
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'term-actions';
-
-                    pageRefBtn = document.createElement('button');
-                    pageRefBtn.className = 'btn-page-ref';
-                    pageRefBtn.textContent = `Page ${firstExtraction.page}`;
-                    pageRefBtn.addEventListener('click', () => {
-                        this.goToPage(firstExtraction.page);
-                    });
-
-                    actionsDiv.appendChild(pageRefBtn);
-                    termItem.appendChild(actionsDiv);
-                } else {
-                    pageRefBtn.textContent = `Page ${firstExtraction.page}`;
-                }
-            }
+            termValueDiv.appendChild(extractionsContainer);
         } else {
             // No extractions found for this field
             termValueDiv.style.color = '#999';
             termValueDiv.style.fontStyle = 'italic';
             termValueDiv.textContent = 'Not found';
         }
+    }
+
+    addTermItemActions(termItem) {
+        // Add delete/edit action buttons to a term item
+        // Only add if not already present
+        if (termItem.querySelector('.term-item-actions')) {
+            return;
+        }
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'term-item-actions';
+        actionsDiv.innerHTML = `
+            <button class="btn-term-edit" title="Edit">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="btn-term-delete" title="Delete">
+                <span class="material-icons">delete</span>
+            </button>
+        `;
+
+        // Add event handlers
+        const editBtn = actionsDiv.querySelector('.btn-term-edit');
+        const deleteBtn = actionsDiv.querySelector('.btn-term-delete');
+
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('Edit term:', termItem.dataset.fieldId);
+            // TODO: Implement edit functionality
+        });
+
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('Delete term:', termItem.dataset.fieldId);
+            // TODO: Implement delete functionality
+        });
+
+        termItem.appendChild(actionsDiv);
     }
 
     showTermsMessage(message) {
@@ -823,71 +878,127 @@ class DocumentDetailPage {
     async loadPDF(documentId) {
         try {
             const pdfUrl = `/api/documents/${documentId}/content`;
-            
-            // For demo purposes, use a sample PDF if the API endpoint doesn't exist
-            const fallbackPdfUrl = 'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFsgMyAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKMyAwIG9iago8PAovVHlwZSAvUGFnZQovUGFyZW50IDIgMCBSCi9NZWRpYUJveCBbIDAgMCA2MTIgNzkyIF0KL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgNCAwIFIKPj4KPj4KL0NvbnRlbnRzIDUgMCBSCj4+CmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQo+PgplbmRvYmoKNSAwIG9iago8PAovTGVuZ3RoIDQ0Cj4+CnN0cmVhbQpCVAovRjEgMTIgVGYKNzIgNzIwIFRkCihTYW1wbGUgUERGIERvY3VtZW50KSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0NSAwMDAwMCBuIAowMDAwMDAwMzIyIDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDE0CiUlRU9G';
 
             let pdfData;
-            try {
-                console.log('🔍 Loading PDF content from:', pdfUrl);
-                const response = await fetch(pdfUrl, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (response.ok) {
-                    console.log('✅ PDF content loaded successfully');
-                    pdfData = await response.arrayBuffer();
-                } else {
-                    console.error('❌ PDF content request failed:', response.status, response.statusText);
-                    if (response.status === 401) {
-                        console.error('Authentication required for PDF content');
+            console.log('🔍 Loading PDF content from:', pdfUrl);
+            const response = await fetch(pdfUrl, {
+                headers: getAuthHeaders()
+            });
+
+            console.log(`📊 PDF content response status: ${response.status}`);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.error('❌ Authentication required for PDF content');
+                    this.showError('Please log in to view this document');
+                    setTimeout(() => {
                         window.location.href = '/login.html';
-                        return;
-                    }
-                    throw new Error(`PDF request failed: ${response.status} ${response.statusText}`);
+                    }, 2000);
+                    return;
                 }
-            } catch (error) {
-                console.error('❌ Error loading PDF content:', error);
-                console.warn('⚠️ Falling back to sample PDF document');
-                
-                // Show user-friendly error message
-                this.showError('Could not load your document. Showing sample content instead.');
-                
-                // Use fallback for demo
-                const base64Data = fallbackPdfUrl.split(',')[1];
-                const binaryString = atob(base64Data);
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
+                if (response.status === 404) {
+                    console.error('❌ PDF file not found on server');
+                    this.showPDFError('Document file not found. Please contact support.');
+                    return;
                 }
-                pdfData = bytes.buffer;
+                throw new Error(`PDF request failed: ${response.status} ${response.statusText}`);
             }
 
-            if (typeof pdfjsLib !== 'undefined') {
-                this.pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
-                this.totalPages = this.pdfDoc.numPages;
-                this.currentPage = 1;
-                this.updatePageInfo();
-                await this.initializeContinuousScrolling();
-            } else {
-                this.showPDFError('PDF viewer not available');
+            pdfData = await response.arrayBuffer();
+
+            if (!pdfData || pdfData.byteLength === 0) {
+                console.error('❌ PDF data is empty');
+                this.showPDFError('Document file is empty. Please upload a valid PDF.');
+                return;
             }
+
+            console.log(`✅ PDF content loaded successfully (${(pdfData.byteLength / 1024).toFixed(2)} KB)`);
+
+            // Validate PDF.js is available
+            if (typeof pdfjsLib === 'undefined') {
+                console.error('❌ PDF.js library not available');
+                this.showPDFError('PDF viewer library not loaded. Please refresh the page.');
+                return;
+            }
+
+            // Load PDF document
+            console.log('📖 Parsing PDF document...');
+            this.pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+            this.totalPages = this.pdfDoc.numPages;
+            this.currentPage = 1;
+            console.log(`✅ PDF parsed successfully - ${this.totalPages} pages`);
+
+            this.updatePageInfo();
+            await this.initializeContinuousScrolling();
 
         } catch (error) {
-            console.error('Error loading PDF:', error);
-            this.showPDFError('Failed to load PDF document');
+            console.error('❌ Error loading PDF:', error);
+            this.showPDFError(`Failed to load PDF document: ${error.message}`);
         }
     }
 
     async initializeContinuousScrolling() {
-        if (!this.scrollContainer || !this.pdfDoc) return;
+        if (!this.scrollContainer) {
+            console.error('❌ Scroll container not found');
+            this.showPDFError('PDF viewer container not initialized');
+            return;
+        }
 
-        // Clear container
+        if (!this.pdfDoc) {
+            console.error('❌ PDF document not loaded');
+            this.showPDFError('PDF document not parsed correctly');
+            return;
+        }
+
+        console.log('📐 Initializing continuous scrolling...');
+
+        // Clear container and caches
         this.scrollContainer.innerHTML = '';
         this.pageContainers = [];
         this.renderedPages.clear();
+        this.pageViewports.clear();
 
-        // Create page containers for all pages
+        // CRITICAL FIX: Pre-calculate expected page dimensions
+        try {
+            // Wait for container to be fully laid out first
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+
+            // Get first page to determine dimensions
+            const firstPage = await this.pdfDoc.getPage(1);
+            const containerWidth = this.scrollContainer.clientWidth;
+
+            // Validate container has valid width
+            if (!containerWidth || containerWidth <= 0) {
+                console.error('❌ Container width is invalid:', containerWidth);
+                this.showPDFError('PDF viewer layout error - container has no width. Please refresh the page.');
+                return;
+            }
+
+            const pageViewport = firstPage.getViewport({scale: 1});
+
+            // Calculate scale that will be used for rendering
+            const scale = containerWidth / pageViewport.width;
+
+            // Calculate expected page height based on scale
+            this.expectedPageHeight = Math.ceil(pageViewport.height * scale);
+
+            console.log(`✅ Page dimensions calculated: ${this.expectedPageHeight}px height (scale: ${scale.toFixed(3)}, container: ${containerWidth}px)`);
+
+            // Validate calculated height is reasonable
+            if (!this.expectedPageHeight || this.expectedPageHeight <= 0 || this.expectedPageHeight > 5000) {
+                console.warn(`⚠️ Calculated height ${this.expectedPageHeight}px seems unreasonable, using fallback`);
+                this.expectedPageHeight = 800;
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to pre-calculate page dimensions:', error);
+            // Fallback to reasonable default if calculation fails
+            this.expectedPageHeight = 800;
+        }
+
+        // Create page containers for all pages with pre-calculated heights
+        console.log(`📄 Creating ${this.totalPages} page containers...`);
         for (let pageNum = 1; pageNum <= this.totalPages; pageNum++) {
             const pageContainer = this.createPageContainer(pageNum);
             this.scrollContainer.appendChild(pageContainer);
@@ -897,23 +1008,27 @@ class DocumentDetailPage {
         // Setup scroll listener for dynamic rendering
         this.setupScrollListener();
 
-        // Wait for container to be fully laid out before rendering
-        // This ensures scrollContainer.clientWidth is properly calculated
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        await new Promise(resolve => requestAnimationFrame(resolve));
-
         // Render visible pages initially
+        console.log('🎨 Rendering initial visible pages...');
         await this.renderVisiblePages();
 
         // Extract text content for search
+        console.log('📝 Extracting text content for search...');
         await this.extractAllTextContent();
+
+        console.log('✅ PDF viewer fully initialized');
     }
 
     createPageContainer(pageNum) {
         const container = document.createElement('div');
         container.className = 'pdf-page-container';
         container.dataset.pageNum = pageNum;
-        container.style.minHeight = '100px'; // Small placeholder, will be updated after render
+
+        // CRITICAL FIX: Use fixed height (not minHeight) to prevent layout thrashing
+        // Container dimensions are set once and never changed, preventing scroll events
+        const expectedHeight = this.expectedPageHeight || 800; // Fallback to 800px
+        container.style.height = `${expectedHeight}px`; // Fixed height, not minimum
+        container.style.position = 'relative'; // For absolute canvas positioning
 
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'pdf-page-loading';
@@ -938,6 +1053,12 @@ class DocumentDetailPage {
                 await this.renderVisiblePages();
                 this.isScrolling = false;
             }, 100);
+
+            // Debounce cleanup (longer delay to avoid running too often)
+            clearTimeout(this.cleanupTimeout);
+            this.cleanupTimeout = setTimeout(() => {
+                this.cleanupDistantPages();
+            }, 2000); // Clean up after 2 seconds of no scrolling
         });
     }
 
@@ -969,11 +1090,26 @@ class DocumentDetailPage {
     }
 
     async renderVisiblePages() {
-        if (!this.scrollContainer || this.pageContainers.length === 0) return;
+        // Validate state before rendering
+        if (!this.scrollContainer) {
+            console.warn('⚠️ Cannot render: scroll container missing');
+            return;
+        }
+
+        if (!this.pdfDoc) {
+            console.warn('⚠️ Cannot render: PDF document not loaded');
+            return;
+        }
+
+        if (this.pageContainers.length === 0) {
+            console.warn('⚠️ Cannot render: no page containers');
+            return;
+        }
 
         const scrollTop = this.scrollContainer.scrollTop;
         const containerHeight = this.scrollContainer.clientHeight;
-        const buffer = containerHeight; // Render pages within this buffer
+        const buffer = containerHeight * 2; // Render pages within 2x viewport buffer for smoother scrolling
+        const viewportCenter = scrollTop + containerHeight / 2; // Calculate viewport center for priority
 
         const visibleStart = Math.max(0, scrollTop - buffer);
         const visibleEnd = scrollTop + containerHeight + buffer;
@@ -994,12 +1130,60 @@ class DocumentDetailPage {
             }
         }
 
-        // Render pages in batches to avoid blocking UI
+        // PRIORITY QUEUE: Sort pages by distance from viewport center
+        // Pages closest to center render first, reducing visible gaps when scrolling
+        pagesToRender.sort((a, b) => {
+            const aContainer = this.pageContainers[a - 1];
+            const bContainer = this.pageContainers[b - 1];
+            const aCenter = aContainer.offsetTop + aContainer.offsetHeight / 2;
+            const bCenter = bContainer.offsetTop + bContainer.offsetHeight / 2;
+            const aDistance = Math.abs(aCenter - viewportCenter);
+            const bDistance = Math.abs(bCenter - viewportCenter);
+            return aDistance - bDistance; // Closest first
+        });
+
+        // Render pages in priority order
         for (const pageNum of pagesToRender) {
             await this.renderPage(pageNum);
-            // Small delay to keep UI responsive
-            await new Promise(resolve => setTimeout(resolve, 10));
+            // Use requestAnimationFrame for better performance than setTimeout
+            await new Promise(resolve => requestAnimationFrame(resolve));
         }
+    }
+
+    cleanupDistantPages() {
+        // Clean up pages that are far from viewport to free memory
+        if (!this.scrollContainer || this.pageContainers.length === 0) return;
+
+        const scrollTop = this.scrollContainer.scrollTop;
+        const containerHeight = this.scrollContainer.clientHeight;
+        const cleanupThreshold = containerHeight * 5; // Clean pages 5+ viewports away
+
+        this.renderedPages.forEach(pageNum => {
+            const container = this.pageContainers[pageNum - 1];
+            if (!container) return;
+
+            const pageTop = container.offsetTop;
+            const pageBottom = pageTop + container.offsetHeight;
+            const viewportTop = scrollTop;
+            const viewportBottom = scrollTop + containerHeight;
+
+            // Calculate distance from viewport
+            const distanceFromViewport = Math.min(
+                Math.abs(pageTop - viewportBottom),  // Distance from bottom of viewport
+                Math.abs(pageBottom - viewportTop)    // Distance from top of viewport
+            );
+
+            if (distanceFromViewport > cleanupThreshold) {
+                // Reset to loading state
+                container.innerHTML = `
+                    <div class="pdf-page-loading">
+                        Loading page ${pageNum}...
+                    </div>
+                `;
+                this.renderedPages.delete(pageNum);
+                console.log(`♻️ Cleaned up page ${pageNum} (${Math.round(distanceFromViewport)}px from viewport)`);
+            }
+        });
     }
 
     async renderPage(pageNum) {
@@ -1032,22 +1216,58 @@ class DocumentDetailPage {
 
             const viewport = page.getViewport({scale: scale});
 
-            // Clear loading content
+            // Cache viewport for future use (render priority, coordinate transforms)
+            this.pageViewports.set(pageNum, viewport);
+
+            // CRITICAL FIX: Set container dimensions AND display properties BEFORE clearing
+            // Container needs explicit styles because canvas is absolutely positioned (removed from flow)
+            container.style.display = 'block';  // Ensure block display to prevent collapse
+            container.style.position = 'relative';  // Positioning context for absolute children
+            container.style.width = `${viewport.width}px`;
+            container.style.height = `${viewport.height}px`;
+
+            // Set CSS variable for PDF.js (fixes scale-factor warning)
+            container.style.setProperty('--scale-factor', scale.toString());
+
+            // Clear loading content AFTER setting dimensions
             container.innerHTML = '';
 
-            // CRITICAL FIX: Remove the 100px minHeight constraint that was hiding content
-            // This allows the container to expand to show the full canvas
-            container.style.minHeight = '';
+            // Diagnostic logging to verify dimensions
+            console.log(`📦 RENDER DEBUG [Page ${pageNum}]:
+    Container: ${container.style.width} × ${container.style.height} (inline)
+              ${container.offsetWidth}px × ${container.offsetHeight}px (actual)
+    Viewport:  ${viewport.width}px × ${viewport.height}px
+    Scale:     ${scale.toFixed(3)}
+    ScrollContainer width: ${this.scrollContainer.clientWidth}px`);
+
+            // Validate container dimensions after setting styles
+            if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+                console.error(`❌ CONTAINER DIMENSIONS ARE ZERO - Canvas will be invisible!`);
+                console.error(`   Container computed style:`, window.getComputedStyle(container).display, window.getComputedStyle(container).height);
+
+                // Force dimensions as a fallback
+                container.style.display = 'block !important';
+                container.style.minHeight = `${viewport.height}px`;
+
+                // Wait for next frame and check again
+                await new Promise(resolve => requestAnimationFrame(resolve));
+
+                if (container.offsetHeight === 0) {
+                    console.error(`❌ Container still has 0 height after forcing display. This is a CSS issue.`);
+                    // Skip rendering this page to avoid invisible content
+                    return;
+                }
+            }
 
             // Create canvas
             const canvas = document.createElement('canvas');
             canvas.className = 'pdf-page-canvas';
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-            // Set CSS dimensions to match canvas dimensions (in pixels, not percentage)
-            // This ensures the canvas displays at the correct size
+            // Set CSS dimensions to match canvas dimensions
             canvas.style.width = `${viewport.width}px`;
             canvas.style.height = `${viewport.height}px`;
+            // Canvas is absolutely positioned via CSS
 
             container.appendChild(canvas);
 
@@ -1067,6 +1287,14 @@ class DocumentDetailPage {
 
             await page.render(renderContext).promise;
             this.renderedPages.add(pageNum);
+
+            // Final verification
+            const finalHeight = container.offsetHeight;
+            if (finalHeight > 0) {
+                console.log(`✅ Page ${pageNum} rendered successfully - Canvas: ${canvas.width}×${canvas.height}, Container: ${container.offsetWidth}×${finalHeight}`);
+            } else {
+                console.warn(`⚠️ Page ${pageNum} rendered but container height is still 0px`);
+            }
 
             // Render text layer for text selection and accessibility
             const textLayerDiv = document.createElement('div');
@@ -1096,16 +1324,21 @@ class DocumentDetailPage {
     }
 
     updateDocumentInfo() {
-        if (!this.currentDocument) return;
+        if (!this.currentDocument) {
+            console.warn('⚠️ No document data to display');
+            return;
+        }
+
+        console.log('📝 Updating document info UI...');
 
         const titleElement = document.getElementById('document-title');
         if (titleElement) {
-            titleElement.textContent = this.currentDocument.name || 'Document';
+            titleElement.textContent = this.currentDocument.name || 'Untitled Document';
         }
 
         const filenameElement = document.querySelector('.document-filename');
         if (filenameElement) {
-            filenameElement.textContent = this.currentDocument.filename || this.currentDocument.name;
+            filenameElement.textContent = this.currentDocument.filename || this.currentDocument.name || 'Unknown';
         }
 
         const timestampElement = document.querySelector('.document-timestamp');
@@ -1116,6 +1349,8 @@ class DocumentDetailPage {
 
         // Update document type chips dynamically
         this.updateDocumentTypeChips();
+
+        console.log('✅ Document info updated');
     }
 
     updateDocumentTypeChips() {
@@ -1159,6 +1394,34 @@ class DocumentDetailPage {
             content.style.display = 'none';
             toggle.querySelector('.material-icons').textContent = 'keyboard_arrow_right';
         }
+    }
+
+    collapseAllCategories() {
+        // Collapse all category sections
+        document.querySelectorAll('.category-header').forEach(header => {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.category-toggle');
+
+            if (!header.classList.contains('collapsed')) {
+                header.classList.add('collapsed');
+                content.style.display = 'none';
+                toggle.querySelector('.material-icons').textContent = 'keyboard_arrow_right';
+            }
+        });
+    }
+
+    expandAllCategories() {
+        // Expand all category sections
+        document.querySelectorAll('.category-header').forEach(header => {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.category-toggle');
+
+            if (header.classList.contains('collapsed')) {
+                header.classList.remove('collapsed');
+                content.style.display = 'block';
+                toggle.querySelector('.material-icons').textContent = 'keyboard_arrow_down';
+            }
+        });
     }
 
     // PDF Navigation
@@ -1267,19 +1530,15 @@ class DocumentDetailPage {
     }
 
     updatePageInfo() {
-        const pageInput = document.getElementById('page-input');
-        const pageTotal = document.getElementById('page-total');
-        
-        if (pageInput && !this.isScrolling) {
-            // Only update if user isn't currently editing the input
-            if (document.activeElement !== pageInput) {
-                pageInput.value = this.currentPage;
-            }
-            pageInput.max = this.totalPages;
+        const currentPageDisplay = document.getElementById('current-page-display');
+        const totalPagesDisplay = document.getElementById('total-pages-display');
+
+        if (currentPageDisplay) {
+            currentPageDisplay.textContent = this.currentPage;
         }
-        
-        if (pageTotal) {
-            pageTotal.textContent = ` of ${this.totalPages}`;
+
+        if (totalPagesDisplay) {
+            totalPagesDisplay.textContent = this.totalPages;
         }
     }
 
@@ -2282,9 +2541,42 @@ class DocumentDetailPage {
 
 
 // Initialize the document detail page when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new DocumentDetailPage();
-});
+function initializeApp() {
+    console.log('🚀 Starting DocumentDetailPage initialization...');
+    try {
+        new DocumentDetailPage();
+    } catch (error) {
+        console.error('❌ Fatal error during initialization:', error);
+        // Display error to user
+        const appDiv = document.getElementById('document-detail-app');
+        if (appDiv) {
+            appDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px; text-align: center; flex-direction: column; gap: 20px;">
+                    <div style="font-size: 48px; color: #f44336;">⚠️</div>
+                    <h2 style="color: #333; margin: 0;">Failed to Initialize Page</h2>
+                    <p style="color: #666; max-width: 500px;">
+                        An error occurred while loading the document viewer. Please try refreshing the page.
+                    </p>
+                    <p style="color: #999; font-size: 12px; font-family: monospace;">${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 12px 24px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        Refresh Page
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Handle both cases: DOM already loaded or still loading
+if (document.readyState === 'loading') {
+    // DOM not ready yet
+    console.log('⏳ Waiting for DOM to be ready...');
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    // DOM already loaded (script loaded late or async)
+    console.log('✅ DOM already ready, initializing immediately');
+    initializeApp();
+}
 
 // Global functions for testing
 window.DocumentDetailPage = DocumentDetailPage;

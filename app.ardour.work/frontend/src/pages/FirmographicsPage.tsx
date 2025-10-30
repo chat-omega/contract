@@ -281,7 +281,6 @@ export function FirmographicsPage() {
                 {/* Mascot Illustration Placeholder */}
                 <div className="mb-8">
                   <div className="w-48 h-48 mx-auto bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <div className="text-white text-6xl">🐵</div>
                   </div>
                 </div>
 

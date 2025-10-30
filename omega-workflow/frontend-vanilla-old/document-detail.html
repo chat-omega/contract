@@ -12,9 +12,10 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/document-detail.css">
     
-    <!-- PDF.js v5.4 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.296/pdf.min.js"></script>
-    
+    <!-- PDF.js v3.11 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0IiBmaWxsPSJub25lIj4KICA8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTY0IDMyQzY0IDE0LjMyNjkgNDkuNjczMSAxLjY0MzQyZS0wNiAzMiAyLjQxNTkzZS0wNkMxNC4zMjY5IDMuMTg4NDVlLTA2IC0yLjE3MTI4ZS0wNiAxNC4zMjY5IC0xLjM5ODc2ZS0wNiAzMkMtNi4yNjI0OGUtMDcgNDkuNjczMSAxNC4zMjY5IDY0IDMyIDY0QzQ5LjY3MzEgNjQgNjQgNDkuNjczMSA2NCAzMlpNNTIuNTcxNCAzMkM1Mi41NzE0IDIwLjYzODcgNDMuMzYxMyAxMS40Mjg2IDMyIDExLjQyODZDMjAuNjM4NyAxMS40Mjg2IDExLjQyODYgMjAuNjM4NyAxMS40Mjg2IDMyQzExLjQyODYgNDMuMzYxMyAyMC42Mzg3IDUyLjU3MTQgMzIgNTIuNTcxNEM0My4zNjEzIDUyLjU3MTQgNTIuNTcxNCA0My4zNjEzIDUyLjU3MTQgMzJaIiBmaWxsPSIjRkVDNjJDIi8+Cjwvc3ZnPgo=">
 </head>
@@ -43,11 +44,17 @@
                     <div class="workflow-info">
                         <div class="workflow-name">
                             <label>Workflow:</label>
-                            <select class="workflow-select">
-                                <option>credit agreement</option>
-                                <option>general contract</option>
-                                <option>loan agreement</option>
-                            </select>
+                            <div class="workflow-row">
+                                <select class="workflow-select">
+                                    <option>credit agreement</option>
+                                    <option>general contract</option>
+                                    <option>loan agreement</option>
+                                </select>
+                                <button class="btn-export">
+                                    <span class="material-icons">download</span>
+                                    Export
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="reviewers-section">
@@ -59,9 +66,8 @@
                         </div>
                         
                         <div class="workflow-actions">
-                            <button class="btn-edit-workflow">
+                            <button class="btn-edit-workflow" title="Edit Workflow">
                                 <span class="material-icons">edit</span>
-                                Edit Workflow
                             </button>
                             <button class="btn-collapse-all">Collapse All</button>
                             <button class="btn-expand-all">Expand All</button>
@@ -83,27 +89,23 @@
 
         <!-- Right Side: Document Viewer -->
         <div class="document-viewer">
-            <!-- Document Header -->
-            <div class="document-header">
-                <div class="document-info">
-                    <div class="document-timestamp">7/21/25, 4:47 PM</div>
-                    <div class="document-filename">EX-10.1 2 exhibit101termloanexecutio.htm EX-10.1</div>
-                    <div class="document-label">Document</div>
+            <!-- Document Toolbar -->
+            <div class="document-toolbar">
+                <div class="page-display">
+                    <button id="prev-page" class="page-nav-btn" title="Previous Page">
+                        <span class="material-icons">keyboard_arrow_up</span>
+                    </button>
+                    <span class="page-text">Page </span>
+                    <span id="current-page-display">1</span>
+                    <span class="page-text"> of </span>
+                    <span id="total-pages-display">--</span>
+                    <button id="next-page" class="page-nav-btn" title="Next Page">
+                        <span class="material-icons">keyboard_arrow_down</span>
+                    </button>
                 </div>
-                <button id="close-document" class="close-button">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-
-            <!-- Document Controls -->
-            <div class="document-controls">
                 <button id="btn-search" class="btn-search">
                     <span class="material-icons">search</span>
                     Find in Document
-                </button>
-                <button class="btn-export">
-                    <span class="material-icons">download</span>
-                    Export
                 </button>
             </div>
 
@@ -115,30 +117,6 @@
                         <p>Loading document...</p>
                     </div>
                     <div id="pdf-scroll-container" class="pdf-scroll-container"></div>
-                </div>
-                
-                <!-- PDF Controls -->
-                <div class="pdf-controls">
-                    <button id="prev-page" class="pdf-control-btn">
-                        <span class="material-icons">chevron_left</span>
-                    </button>
-                    <div class="page-input-container">
-                        <span>Page </span>
-                        <input type="number" id="page-input" class="page-input" min="1" value="1">
-                        <span id="page-total" class="page-total"> of 165</span>
-                    </div>
-                    <button id="next-page" class="pdf-control-btn">
-                        <span class="material-icons">chevron_right</span>
-                    </button>
-                    <div class="zoom-controls">
-                        <button id="zoom-out" class="pdf-control-btn">
-                            <span class="material-icons">zoom_out</span>
-                        </button>
-                        <span id="zoom-level" class="zoom-level">100%</span>
-                        <button id="zoom-in" class="pdf-control-btn">
-                            <span class="material-icons">zoom_in</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

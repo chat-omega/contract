@@ -6,6 +6,8 @@ Integrates with LangGraph for deep research capabilities
 import os
 import json
 import asyncio
+import time
+import logging
 from datetime import datetime
 from typing import Optional, Dict, List
 from uuid import uuid4
@@ -18,6 +20,9 @@ from dotenv import load_dotenv
 from sse_starlette.sse import EventSourceResponse
 
 from research_agent import ResearchAgent
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -164,8 +169,38 @@ async def stream_research(session_id: str):
         last_progress = None
         last_report_length = 0
         last_event_index = 0
+        stream_start_time = time.time()
+        max_stream_duration = 600  # 10 minutes max
+        last_heartbeat = time.time()
 
         while True:
+            # Check for stream timeout
+            elapsed = time.time() - stream_start_time
+            if elapsed > max_stream_duration:
+                logger.warning(f"SSE stream timeout after {elapsed:.1f}s for session {session_id}")
+                yield {
+                    "event": "message",
+                    "data": json.dumps({
+                        "type": "error",
+                        "data": f"Research timed out after {max_stream_duration/60:.0f} minutes. Please try again with a simpler query."
+                    })
+                }
+                yield {
+                    "event": "message",
+                    "data": "[DONE]"
+                }
+                # Mark session as failed
+                session["status"] = "failed"
+                session["error"] = "Stream timeout"
+                break
+
+            # Send heartbeat every 30 seconds to keep connection alive
+            if time.time() - last_heartbeat > 30:
+                yield {
+                    "event": "heartbeat",
+                    "data": json.dumps({"type": "heartbeat", "time": time.time()})
+                }
+                last_heartbeat = time.time()
             # Check if session status changed
             if session["status"] != last_status:
                 yield {

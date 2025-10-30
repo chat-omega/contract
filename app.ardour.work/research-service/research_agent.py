@@ -5,6 +5,7 @@ Based on the open_deep_research project
 
 import os
 import time
+import asyncio
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from operator import itemgetter
@@ -18,6 +19,11 @@ from tavily import TavilyClient
 
 # Configure logger
 logger = logging.getLogger(__name__)
+
+# Timeout constants
+SYNTHESIS_TIMEOUT = 300  # 5 minutes
+REPORT_GENERATION_TIMEOUT = 300  # 5 minutes
+HEARTBEAT_INTERVAL = 10  # 10 seconds
 
 
 class ResearchAgent:
@@ -333,19 +339,45 @@ Please generate a comprehensive research report.""")
         if progress_callback:
             progress_callback(message)
 
-        # Step 3: Synthesize findings
+        # Step 3: Synthesize findings (shows as "Synthesis" in UI)
         synth_start = time.time()
         logger.info(f"🧠 Step 3: Synthesizing {len(all_results)} findings...")
 
         if event_callback:
-            event_callback({"type": "step_started", "step": "review", "phase": "Review"})
+            event_callback({"type": "step_started", "step": "synthesis", "phase": "Synthesis"})
 
         message = "Synthesizing findings from search results..."
         print(message)
         if progress_callback:
             progress_callback(message)
 
-        synthesized = await self._synthesize_findings(query, all_results, llm)
+        # Add timeout and heartbeat for synthesis
+        try:
+            # Create heartbeat task
+            async def heartbeat():
+                while True:
+                    await asyncio.sleep(HEARTBEAT_INTERVAL)
+                    if progress_callback:
+                        progress_callback("Still synthesizing findings...")
+
+            heartbeat_task = asyncio.create_task(heartbeat())
+
+            # Run synthesis with timeout
+            synthesized = await asyncio.wait_for(
+                self._synthesize_findings(query, all_results, llm),
+                timeout=SYNTHESIS_TIMEOUT
+            )
+
+            # Cancel heartbeat
+            heartbeat_task.cancel()
+            try:
+                await heartbeat_task
+            except asyncio.CancelledError:
+                pass
+
+        except asyncio.TimeoutError:
+            logger.error(f"Synthesis timed out after {SYNTHESIS_TIMEOUT}s")
+            raise Exception(f"Synthesis took longer than {SYNTHESIS_TIMEOUT/60:.1f} minutes and was cancelled. Please try with a shorter query or fewer sources.")
 
         synth_time = time.time() - synth_start
         step_times['synthesis'] = synth_time
@@ -356,14 +388,41 @@ Please generate a comprehensive research report.""")
         if progress_callback:
             progress_callback(message)
 
-        # Step 4: Generate report
+        # Step 4: Generate report (part of "Synthesis" phase in UI)
         report_start = time.time()
         logger.info("📝 Step 4: Generating final report...")
 
-        if event_callback:
-            event_callback({"type": "step_started", "step": "synthesis", "phase": "Synthesis"})
+        # Note: Not emitting step_started here as report generation is part of synthesis phase in UI
+        # if event_callback:
+        #     event_callback({"type": "step_started", "step": "synthesis", "phase": "Synthesis"})
 
-        report = await self._generate_report(query, synthesized, llm)
+        # Add timeout and heartbeat for report generation
+        try:
+            # Create heartbeat task
+            async def heartbeat_report():
+                while True:
+                    await asyncio.sleep(HEARTBEAT_INTERVAL)
+                    if progress_callback:
+                        progress_callback("Generating comprehensive report...")
+
+            heartbeat_task = asyncio.create_task(heartbeat_report())
+
+            # Run report generation with timeout
+            report = await asyncio.wait_for(
+                self._generate_report(query, synthesized, llm),
+                timeout=REPORT_GENERATION_TIMEOUT
+            )
+
+            # Cancel heartbeat
+            heartbeat_task.cancel()
+            try:
+                await heartbeat_task
+            except asyncio.CancelledError:
+                pass
+
+        except asyncio.TimeoutError:
+            logger.error(f"Report generation timed out after {REPORT_GENERATION_TIMEOUT}s")
+            raise Exception(f"Report generation took longer than {REPORT_GENERATION_TIMEOUT/60:.1f} minutes and was cancelled. Please try again with a simpler query.")
 
         report_time = time.time() - report_start
         step_times['report_generation'] = report_time

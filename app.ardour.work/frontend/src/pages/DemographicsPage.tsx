@@ -132,7 +132,6 @@ export function DemographicsPage() {
             {/* Branding */}
             <div className="mb-8">
               <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/30 transform hover:scale-105 transition-transform">
-                <span className="text-6xl">🐵</span>
               </div>
               <h1 className="text-base font-semibold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">
                 Apollo People Search

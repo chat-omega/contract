@@ -43,7 +43,7 @@ interface NotRecommendedItem {
 
 export function StrategiesTab() {
   const [currentStateExpanded, setCurrentStateExpanded] = useState(true);
-  const [notRecommendedExpanded, setNotRecommendedExpanded] = useState(false);
+  const [notRecommendedExpanded, setNotRecommendedExpanded] = useState(true);
 
   const acquisitionCards: AcquisitionCard[] = [
     {
