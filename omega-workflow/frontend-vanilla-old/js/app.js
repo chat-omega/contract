@@ -1045,9 +1045,22 @@ function switchPage(path, updateHistory = true) {
         pages.forEach(page => {
             page.style.display = 'none';
         });
-        
+
         // Show the selected page based on path
-        if (normalizedPath === 'workflows') {
+        if (normalizedPath === 'credit-analysis' || normalizedPath === '') {
+            const creditAnalysisPage = document.getElementById('credit-analysis-page');
+            console.log('✅ Showing credit-analysis page, element found:', !!creditAnalysisPage);
+            if (creditAnalysisPage) {
+                creditAnalysisPage.style.display = 'block';
+                // Initialize credit analysis chat if function exists
+                if (typeof initCreditAnalysisChat === 'function') {
+                    initCreditAnalysisChat();
+                }
+            } else {
+                console.error('❌ credit-analysis-page element not found!');
+            }
+            if (updateHistory) history.pushState(null, '', normalizedPath === '' ? '/' : '/credit-analysis');
+        } else if (normalizedPath === 'workflows') {
             const workflowsPage = document.getElementById('workflows-page');
             console.log('✅ Showing workflows page, element found:', !!workflowsPage);
             if (workflowsPage) {
@@ -1056,7 +1069,7 @@ function switchPage(path, updateHistory = true) {
                 console.error('❌ workflows-page element not found!');
             }
             if (updateHistory) history.pushState(null, '', '/workflows');
-        } else if (normalizedPath === 'documents' || normalizedPath === '') {
+        } else if (normalizedPath === 'documents') {
             const documentsPage = document.getElementById('documents-page');
             console.log('✅ Showing documents page, element found:', !!documentsPage);
             if (documentsPage) {
@@ -1064,7 +1077,7 @@ function switchPage(path, updateHistory = true) {
             } else {
                 console.error('❌ documents-page element not found!');
             }
-            if (updateHistory) history.pushState(null, '', normalizedPath === '' ? '/' : '/documents');
+            if (updateHistory) history.pushState(null, '', '/documents');
         } else if (normalizedPath === 'create-workflow') {
             const createWorkflowPage = document.getElementById('create-workflow-page');
             console.log('✅ Showing create-workflow page, element found:', !!createWorkflowPage);
@@ -1223,25 +1236,29 @@ function switchPage(path, updateHistory = true) {
             }
             if (updateHistory) history.pushState(null, '', '/field-discovery');
         } else {
-            // Default to documents page for unknown routes
-            const documentsPage = document.getElementById('documents-page');
-            console.log('⚠️ Unknown route, showing documents page, element found:', !!documentsPage);
-            if (documentsPage) {
-                documentsPage.style.display = 'block';
+            // Default to credit analysis page for unknown routes
+            const creditAnalysisPage = document.getElementById('credit-analysis-page');
+            console.log('⚠️ Unknown route, showing credit analysis page, element found:', !!creditAnalysisPage);
+            if (creditAnalysisPage) {
+                creditAnalysisPage.style.display = 'block';
+                // Initialize credit analysis chat if function exists
+                if (typeof initCreditAnalysisChat === 'function') {
+                    initCreditAnalysisChat();
+                }
             } else {
-                console.error('❌ documents-page element not found!');
+                console.error('❌ credit-analysis-page element not found!');
             }
             if (updateHistory) history.pushState(null, '', '/');
         }
     } catch (error) {
         console.error('❌ Error in switchPage:', error);
-        // Fallback: try to show documents page
-        const documentsPage = document.getElementById('documents-page');
-        if (documentsPage) {
-            console.log('🔧 Fallback: showing documents page due to error');
-            documentsPage.style.display = 'block';
+        // Fallback: try to show credit analysis page
+        const creditAnalysisPage = document.getElementById('credit-analysis-page');
+        if (creditAnalysisPage) {
+            console.log('🔧 Fallback: showing credit analysis page due to error');
+            creditAnalysisPage.style.display = 'block';
         } else {
-            console.error('❌ CRITICAL: documents-page element not found even in fallback!');
+            console.error('❌ CRITICAL: credit-analysis-page element not found even in fallback!');
         }
     }
     
