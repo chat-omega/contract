@@ -820,6 +820,90 @@ async def get_templates():
             'description': 'Best suited for understanding the basic information in an employee agreement.',
             'fields': ['Title', 'Parties', 'Date', 'Employee Name', 'Position/Title', 'Base Salary'],
             'documentTypes': ['Employment Related Agt']
+        },
+        {
+            'id': 'credit-agreement',
+            'name': 'Credit Agreement / Credit Analysis',
+            'category': 'Credit/Financing',
+            'description': 'Best suited for analyzing credit agreements, loan agreements, and credit facilities with 54 unique fields. Covers facility structure, covenants, collateral, and default provisions.',
+            'fields': [
+                # Basic Information (4 fields)
+                '25d677a1-70d0-43c2-9b36-d079733dd020',  # Title
+                '98086156-f230-423c-b214-27f542e72708',  # Parties
+                'fc5ba010-671b-427f-82cb-95c02d4c704c',  # Date
+                'bc0934b4-e6c3-4c27-8d26-13238358fec3',  # Use of Proceeds/Purpose
+
+                # Facility Structure & Economics (7 fields)
+                'ebb88499-86b5-4442-b1ff-bea7725add5d',  # Credit Facility Sizes
+                '8e95f1f2-56cf-49b3-bdef-91babbe96815',  # "Maturity Date"/"Termination Date" Definition
+                'fe07856a-9551-4197-afa4-0e0a716afefe',  # Incremental Facilities
+                'b9cadbb3-3cb2-4a28-ab4c-0f5959e056d5',  # Interest Rate and Margin Terms
+                '89bf6447-b23a-4d0c-a033-7cc743c20b70',  # "Applicable Margin" Definition
+                '47476e38-bc19-4e2d-bdc3-90d32d89556f',  # Commitment Fees — Credit Agreement
+                'b38b4ea0-947b-4907-8b19-430773573e40',  # Administrative Agent Fees
+
+                # Repayment, Amortization & Prepayments (6 fields)
+                '83789b0f-bf10-4e93-8879-08d28359746c',  # Scheduled Repayment of Loans
+                '5468f9a3-38d5-41d2-9686-b6d7546b7a8a',  # Interest Payment Dates
+                '35c7673d-3fb1-4364-817e-fc621e1afff8',  # Mandatory Prepayments — Credit Agreement
+                '5dcf91b4-625f-4495-b497-33a2a45c8efd',  # Prepayment Premium/Call Protection
+                'ca29e934-ba34-45eb-83d7-8958b44e254e',  # Change of Control — Credit Agreement
+                '6a878ef3-9038-49ee-922b-4823366d7798',  # Amortization
+
+                # Collateral, Guarantees & Borrowing Base (5 fields)
+                '04c0ae0a-2968-4677-b3b9-5ee073f453a2',  # Collateral Representation
+                'c920c7a0-e899-4458-909f-fe28489d6296',  # Perfected Security Interest Condition
+                '9922a1b3-b2c3-456d-a88c-528b3101aac1',  # Subsidiary Guarantees
+                '8a610086-6978-4f72-860f-a9ee01cd6fd8',  # "Borrowing Base" Definition
+                'ec0e703f-65c3-4b9e-bf25-fff17729a590',  # Borrowing Base Reporting
+
+                # Affirmative & Information Covenants (4 fields)
+                '025e1173-8d5c-4b49-ad66-e762735efd12',  # Financial Statements and Information Reporting Covenant
+                '465ed2ae-d881-4724-97d5-af73b64a496c',  # Books, Records and Inspection Covenant
+                '84d46142-4c5b-4532-aed2-9a256659cdec',  # Financial Information Condition
+                '2acda51a-fffa-4b63-87b0-994c9b2f7d71',  # Anti-Corruption and Sanctions Covenant
+
+                # Negative Covenants (7 fields)
+                'f7e00797-43d2-4ef0-aea3-73c7df07fccd',  # Indebtedness Covenant
+                '2f49161d-b914-43be-b17f-719adf3cf745',  # Liens Covenant/Negative Pledge
+                'a2fec51f-e8be-4f43-b82a-14624dccf9a2',  # Restricted Payments Covenant
+                '674b1ebc-961d-4473-b4e8-a36fffee493f',  # Investments and Acquisitions Covenant
+                'b9afa9b2-a99e-46ab-a851-2f4d5e34069c',  # Dispositions or Asset Sales Covenant
+                '7c988c07-67c6-4c3f-ac8f-454bf4c73f59',  # Transactions with Affiliates Covenant
+                '1e3ca87e-fa9c-4f5e-8ef4-a0fed740460b',  # Increased Costs
+
+                # Financial Covenants & Definitions (5 fields)
+                '50ce0a19-4ecf-421b-8d8d-515146180eca',  # Financial Covenants — Credit Agreement
+                'bbe39ddd-7fa1-4fb2-8988-0e6b9e8f6fc0',  # Financial Covenant — Leverage Ratio
+                '5b738c95-79da-4e6a-9e8a-762db99c6177',  # Financial Covenant — Interest/Debt Service Coverage Ratio
+                'e3388def-e3d1-495b-90ee-9e45bbe60146',  # "EBITDA" Definition
+                '3144b80b-cf5f-4849-a188-10d5078485dd',  # "Consolidated Net Income" Definition
+
+                # Conditions to Closing / Funding (2 fields)
+                '5e06ba70-f1e2-411a-9ea0-097999641ce2',  # Consummation of the Acquisition/Merger Condition — Credit Agreement
+                '040884ef-1fdb-4ae6-b3db-c32b7a057da7',  # Government/Third Party Authorization Representation
+
+                # Events of Default & Remedies (7 fields)
+                '813b86de-f4dc-4d0e-8e22-9de67b95a6d2',  # Default for Non-Payment
+                'dfc9c4fd-5b69-4461-8dd1-8eeed712e846',  # Default for Inaccuracy of Representations/Misrepresentation
+                '67e6f362-fd4e-4ceb-8898-9cfc5c9e5702',  # Default for Insolvency
+                'd0319eca-8308-4ea3-a596-5243896c45b0',  # Default for Judgment/Creditors' Process
+                '74978e3e-8f1d-4745-a885-e6da3ccbadf1',  # Default for Invalidity/Unlawfulness
+                'f1ba80f3-cbc2-4334-8efc-94c88fa7f10b',  # Default for Non-Compliance with Pension Regulations
+                'e85e4dbd-35c8-4fad-bebc-8e2a02a36e67',  # Cross Default/Cross Acceleration
+
+                # Lender Mechanics, Amendments & Transfers (4 fields)
+                'bc6d7f7c-a03a-4b92-b5b1-b21fc67108dc',  # Affected Lender Approval
+                '99006174-7187-48d9-ac54-f99eb589367c',  # Assignment
+                'baa242bf-af54-49b9-ae93-7a0f00f7391c',  # "Defaulting Lender" Definition
+                'b5bb6221-a387-4c83-8593-c5deda43866e',  # Costs and Expenses
+
+                # Boilerplate / General Provisions (3 fields)
+                '57a97d34-6f7b-4e44-8ebf-4b80d8f0b812',  # Electronic Signature
+                'c83868ae-269a-4a1b-b2af-c53e5f91efca',  # Governing Law
+                '47516578-8a4a-451d-8147-7cd84d4d5f1c'   # Can notice be given electronically?
+            ],
+            'documentTypes': ['Debt Related Agt', 'Debt Supplemental Agt']
         }
     ]
     return templates
@@ -1681,6 +1765,102 @@ async def create_workflow_from_template(workflow_id: str, template_data: Workflo
             'description': 'Best suited for understanding the basic information in an employee agreement.',
             'documentTypes': ['Employment Related Agt'],
             'scoringProfiles': {},
+            'status': 'draft',
+            'currentStep': 5,
+            'createdAt': datetime.utcnow().isoformat(),
+            'updatedAt': datetime.utcnow().isoformat()
+        }
+    elif 'credit' in template_name.lower() and 'agreement' in template_name.lower():
+        workflow_sessions[workflow_id] = {
+            'id': workflow_id,
+            'name': 'Credit Agreement / Credit Analysis',
+            'fields': {
+                'Basic Information': [
+                    {'fieldId': '25d677a1-70d0-43c2-9b36-d079733dd020', 'name': 'Title'},
+                    {'fieldId': '98086156-f230-423c-b214-27f542e72708', 'name': 'Parties'},
+                    {'fieldId': 'fc5ba010-671b-427f-82cb-95c02d4c704c', 'name': 'Date'},
+                    {'fieldId': 'bc0934b4-e6c3-4c27-8d26-13238358fec3', 'name': 'Use of Proceeds/Purpose'}
+                ],
+                'Facility Structure & Economics': [
+                    {'fieldId': 'ebb88499-86b5-4442-b1ff-bea7725add5d', 'name': 'Credit Facility Sizes'},
+                    {'fieldId': '8e95f1f2-56cf-49b3-bdef-91babbe96815', 'name': '"Maturity Date"/"Termination Date" Definition'},
+                    {'fieldId': 'fe07856a-9551-4197-afa4-0e0a716afefe', 'name': 'Incremental Facilities'},
+                    {'fieldId': 'b9cadbb3-3cb2-4a28-ab4c-0f5959e056d5', 'name': 'Interest Rate and Margin Terms'},
+                    {'fieldId': '89bf6447-b23a-4d0c-a033-7cc743c20b70', 'name': '"Applicable Margin" Definition'},
+                    {'fieldId': '47476e38-bc19-4e2d-bdc3-90d32d89556f', 'name': 'Commitment Fees — Credit Agreement'},
+                    {'fieldId': 'b38b4ea0-947b-4907-8b19-430773573e40', 'name': 'Administrative Agent Fees'}
+                ],
+                'Repayment, Amortization & Prepayments': [
+                    {'fieldId': '83789b0f-bf10-4e93-8879-08d28359746c', 'name': 'Scheduled Repayment of Loans'},
+                    {'fieldId': '5468f9a3-38d5-41d2-9686-b6d7546b7a8a', 'name': 'Interest Payment Dates'},
+                    {'fieldId': '35c7673d-3fb1-4364-817e-fc621e1afff8', 'name': 'Mandatory Prepayments — Credit Agreement'},
+                    {'fieldId': '5dcf91b4-625f-4495-b497-33a2a45c8efd', 'name': 'Prepayment Premium/Call Protection'},
+                    {'fieldId': 'ca29e934-ba34-45eb-83d7-8958b44e254e', 'name': 'Change of Control — Credit Agreement'},
+                    {'fieldId': '6a878ef3-9038-49ee-922b-4823366d7798', 'name': 'Amortization'}
+                ],
+                'Collateral, Guarantees & Borrowing Base': [
+                    {'fieldId': '04c0ae0a-2968-4677-b3b9-5ee073f453a2', 'name': 'Collateral Representation'},
+                    {'fieldId': 'c920c7a0-e899-4458-909f-fe28489d6296', 'name': 'Perfected Security Interest Condition'},
+                    {'fieldId': '04c0ae0a-2968-4677-b3b9-5ee073f453a2', 'name': 'Collateral Representation'},
+                    {'fieldId': '9922a1b3-b2c3-456d-a88c-528b3101aac1', 'name': 'Subsidiary Guarantees'},
+                    {'fieldId': '8a610086-6978-4f72-860f-a9ee01cd6fd8', 'name': '"Borrowing Base" Definition'},
+                    {'fieldId': 'ec0e703f-65c3-4b9e-bf25-fff17729a590', 'name': 'Borrowing Base Reporting'}
+                ],
+                'Affirmative & Information Covenants': [
+                    {'fieldId': '025e1173-8d5c-4b49-ad66-e762735efd12', 'name': 'Financial Statements and Information Reporting Covenant'},
+                    {'fieldId': '465ed2ae-d881-4724-97d5-af73b64a496c', 'name': 'Books, Records and Inspection Covenant'},
+                    {'fieldId': '84d46142-4c5b-4532-aed2-9a256659cdec', 'name': 'Financial Information Condition'},
+                    {'fieldId': 'bc0934b4-e6c3-4c27-8d26-13238358fec3', 'name': 'Use of Proceeds/Purpose'},
+                    {'fieldId': '2acda51a-fffa-4b63-87b0-994c9b2f7d71', 'name': 'Anti-Corruption and Sanctions Covenant'}
+                ],
+                'Negative Covenants': [
+                    {'fieldId': 'f7e00797-43d2-4ef0-aea3-73c7df07fccd', 'name': 'Indebtedness Covenant'},
+                    {'fieldId': '2f49161d-b914-43be-b17f-719adf3cf745', 'name': 'Liens Covenant/Negative Pledge'},
+                    {'fieldId': 'a2fec51f-e8be-4f43-b82a-14624dccf9a2', 'name': 'Restricted Payments Covenant'},
+                    {'fieldId': '674b1ebc-961d-4473-b4e8-a36fffee493f', 'name': 'Investments and Acquisitions Covenant'},
+                    {'fieldId': 'b9afa9b2-a99e-46ab-a851-2f4d5e34069c', 'name': 'Dispositions or Asset Sales Covenant'},
+                    {'fieldId': '7c988c07-67c6-4c3f-ac8f-454bf4c73f59', 'name': 'Transactions with Affiliates Covenant'},
+                    {'fieldId': '1e3ca87e-fa9c-4f5e-8ef4-a0fed740460b', 'name': 'Increased Costs'},
+                    {'fieldId': 'ca29e934-ba34-45eb-83d7-8958b44e254e', 'name': 'Change of Control — Credit Agreement'}
+                ],
+                'Financial Covenants & Definitions': [
+                    {'fieldId': '50ce0a19-4ecf-421b-8d8d-515146180eca', 'name': 'Financial Covenants — Credit Agreement'},
+                    {'fieldId': 'bbe39ddd-7fa1-4fb2-8988-0e6b9e8f6fc0', 'name': 'Financial Covenant — Leverage Ratio'},
+                    {'fieldId': '5b738c95-79da-4e6a-9e8a-762db99c6177', 'name': 'Financial Covenant — Interest/Debt Service Coverage Ratio'},
+                    {'fieldId': 'e3388def-e3d1-495b-90ee-9e45bbe60146', 'name': '"EBITDA" Definition'},
+                    {'fieldId': '3144b80b-cf5f-4849-a188-10d5078485dd', 'name': '"Consolidated Net Income" Definition'}
+                ],
+                'Conditions to Closing / Funding': [
+                    {'fieldId': '5e06ba70-f1e2-411a-9ea0-097999641ce2', 'name': 'Consummation of the Acquisition/Merger Condition — Credit Agreement'},
+                    {'fieldId': '84d46142-4c5b-4532-aed2-9a256659cdec', 'name': 'Financial Information Condition'},
+                    {'fieldId': '040884ef-1fdb-4ae6-b3db-c32b7a057da7', 'name': 'Government/Third Party Authorization Representation'}
+                ],
+                'Events of Default & Remedies': [
+                    {'fieldId': '813b86de-f4dc-4d0e-8e22-9de67b95a6d2', 'name': 'Default for Non-Payment'},
+                    {'fieldId': 'dfc9c4fd-5b69-4461-8dd1-8eeed712e846', 'name': 'Default for Inaccuracy of Representations/Misrepresentation'},
+                    {'fieldId': '67e6f362-fd4e-4ceb-8898-9cfc5c9e5702', 'name': 'Default for Insolvency'},
+                    {'fieldId': 'd0319eca-8308-4ea3-a596-5243896c45b0', 'name': 'Default for Judgment/Creditors\' Process'},
+                    {'fieldId': '74978e3e-8f1d-4745-a885-e6da3ccbadf1', 'name': 'Default for Invalidity/Unlawfulness'},
+                    {'fieldId': 'f1ba80f3-cbc2-4334-8efc-94c88fa7f10b', 'name': 'Default for Non-Compliance with Pension Regulations'},
+                    {'fieldId': 'e85e4dbd-35c8-4fad-bebc-8e2a02a36e67', 'name': 'Cross Default/Cross Acceleration'}
+                ],
+                'Lender Mechanics, Amendments & Transfers': [
+                    {'fieldId': 'bc6d7f7c-a03a-4b92-b5b1-b21fc67108dc', 'name': 'Affected Lender Approval'},
+                    {'fieldId': '99006174-7187-48d9-ac54-f99eb589367c', 'name': 'Assignment'},
+                    {'fieldId': 'baa242bf-af54-49b9-ae93-7a0f00f7391c', 'name': '"Defaulting Lender" Definition'},
+                    {'fieldId': 'b5bb6221-a387-4c83-8593-c5deda43866e', 'name': 'Costs and Expenses'},
+                    {'fieldId': 'b38b4ea0-947b-4907-8b19-430773573e40', 'name': 'Administrative Agent Fees'}
+                ],
+                'Boilerplate / General Provisions': [
+                    {'fieldId': '57a97d34-6f7b-4e44-8ebf-4b80d8f0b812', 'name': 'Electronic Signature'},
+                    {'fieldId': 'c83868ae-269a-4a1b-b2af-c53e5f91efca', 'name': 'Governing Law'},
+                    {'fieldId': '040884ef-1fdb-4ae6-b3db-c32b7a057da7', 'name': 'Government/Third Party Authorization Representation'},
+                    {'fieldId': '47516578-8a4a-451d-8147-7cd84d4d5f1c', 'name': 'Can notice be given electronically?'}
+                ]
+            },
+            'description': 'Best suited for analyzing credit agreements, loan agreements, and credit facilities. Covers facility structure, covenants, collateral, and default provisions.',
+            'documentTypes': ['Debt Related Agt', 'Debt Supplemental Agt'],
+            'scoringProfiles': [],
             'status': 'draft',
             'currentStep': 5,
             'createdAt': datetime.utcnow().isoformat(),

@@ -484,6 +484,13 @@ class ZuvaClient:
         while elapsed < max_wait:
             try:
                 status_data = await self.get_extraction_status(request_id)
+
+                # Debug logging for full response
+                debug_mode = os.getenv('ZUVA_DEBUG', 'false').lower() == 'true'
+                if debug_mode:
+                    print(f"   🐛 DEBUG - Full status response:")
+                    print(f"   {json.dumps(status_data, indent=2)}")
+
                 state = status_data.get('status', 'unknown')
 
                 print(f"   Status: {state} (elapsed: {elapsed}s)")
@@ -493,8 +500,29 @@ class ZuvaClient:
                     return status_data
 
                 if state == 'failed':
+                    # Enhanced error information capture
                     error_msg = status_data.get('message', 'Extraction failed')
-                    raise ZuvaExtractionError(f"Zuva extraction failed: {error_msg}")
+
+                    # Capture additional error details from Zuva response
+                    error_obj = status_data.get('error', {})
+                    error_code = error_obj.get('code', 'unknown') if isinstance(error_obj, dict) else 'unknown'
+                    error_details = error_obj.get('message', '') if isinstance(error_obj, dict) else ''
+                    failures = status_data.get('failures', [])
+
+                    # Build comprehensive error message
+                    detailed_error = f"Zuva extraction failed: {error_msg}"
+                    if error_code and error_code != 'unknown':
+                        detailed_error += f"\n  Error Code: {error_code}"
+                    if error_details:
+                        detailed_error += f"\n  Details: {error_details}"
+                    if failures:
+                        detailed_error += f"\n  Failures: {json.dumps(failures, indent=2)}"
+
+                    # Log full response for debugging
+                    print(f"❌ Zuva extraction failed. Full status response:")
+                    print(f"   {json.dumps(status_data, indent=2)}")
+
+                    raise ZuvaExtractionError(detailed_error)
 
                 # Wait before next poll
                 await asyncio.sleep(poll_interval)
