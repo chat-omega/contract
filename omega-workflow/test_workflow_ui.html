@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Template Visibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .template-card {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .template-card.credit {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        .template-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .template-card .category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #2196F3;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .template-card .description {
+            color: #666;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        .template-card .details {
+            font-size: 13px;
+            color: #999;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .pass {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .fail {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+        }
+        .summary {
+            background: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin: 20px 0;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Workflow Template Visibility Test</h1>
+
+    <div class="summary">
+        <strong>Test Objective:</strong> Verify that the "Credit Agreement / Credit Analysis" template is visible in the API response and can be loaded for workflow creation.
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <button onclick="runTest()">Run Template Visibility Test</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>All Available Templates</h2>
+        <div id="templates-list"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api/analyze';
+
+        async function runTest() {
+            const resultsDiv = document.getElementById('test-results');
+            const templatesDiv = document.getElementById('templates-list');
+
+            resultsDiv.innerHTML = '<p class="loading">Loading templates from API...</p>';
+            templatesDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/workflows/templates`);
+
+                if (!response.ok) {
+                    resultsDiv.innerHTML = `<p class="fail">❌ API request failed with status: ${response.status}</p>`;
+                    return;
+                }
+
+                const templates = await response.json();
+
+                resultsDiv.innerHTML = `<p class="pass">✅ API responded successfully</p>`;
+                resultsDiv.innerHTML += `<p>Total templates found: <strong>${templates.length}</strong></p>`;
+
+                // Find credit agreement template
+                const creditTemplate = templates.find(t => t.id === 'credit-agreement');
+
+                if (creditTemplate) {
+                    resultsDiv.innerHTML += `<p class="pass">✅ PASS: Credit Agreement template found in API response!</p>`;
+                    resultsDiv.innerHTML += `<div class="template-card credit">
+                        <h3>🎯 ${creditTemplate.name}</h3>
+                        <span class="category">${creditTemplate.category}</span>
+                        <div class="description">${creditTemplate.description}</div>
+                        <div class="details">
+                            <strong>Template ID:</strong> ${creditTemplate.id}<br>
+                            <strong>Fields:</strong> ${creditTemplate.fields.length} field IDs<br>
+                            <strong>Document Types:</strong> ${creditTemplate.documentTypes.join(', ')}
+                        </div>
+                    </div>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="fail">❌ FAIL: Credit Agreement template NOT found in API response</p>`;
+                }
+
+                // Display all templates
+                templatesDiv.innerHTML = '<h3>Template Catalog:</h3>';
+
+                // Group by category
+                const categorized = {};
+                templates.forEach(t => {
+                    const cat = t.category || 'Uncategorized';
+                    if (!categorized[cat]) categorized[cat] = [];
+                    categorized[cat].push(t);
+                });
+
+                // Display by category
+                Object.keys(categorized).sort().forEach(category => {
+                    templatesDiv.innerHTML += `<h4>${category}</h4>`;
+                    categorized[category].forEach(template => {
+                        const isCreditTemplate = template.id === 'credit-agreement';
+                        templatesDiv.innerHTML += `<div class="template-card ${isCreditTemplate ? 'credit' : ''}">
+                            <h3>${isCreditTemplate ? '🎯 ' : ''}${template.name}</h3>
+                            <span class="category">${template.category}</span>
+                            <div class="description">${template.description || 'No description'}</div>
+                            <div class="details">
+                                <strong>ID:</strong> ${template.id} |
+                                <strong>Fields:</strong> ${template.fields ? template.fields.length : 'N/A'}
+                            </div>
+                        </div>`;
+                    });
+                });
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="fail">❌ Error: ${error.message}</p>`;
+                console.error('Test error:', error);
+            }
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            setTimeout(runTest, 500);
+        });
+    </script>
+</body>
+</html>

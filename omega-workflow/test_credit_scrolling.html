@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Analysis Scrolling Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .test-checklist {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-checklist h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        .checklist-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            border-radius: 4px;
+        }
+        .checklist-item.important {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .checklist-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .instructions {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .demo-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .demo-link:hover {
+            background: #0056b3;
+        }
+        .css-preview {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .css-preview pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #28a745;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .expected-sections {
+            columns: 2;
+            column-gap: 20px;
+        }
+        .expected-sections li {
+            break-inside: avoid;
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Credit Analysis Report - Scrolling Test</h1>
+
+        <div class="test-info">
+            <strong>Test Objective:</strong> Verify that the CSS overflow fix enables proper scrolling in both left (analysis) and right (widgets) panels of the credit report view.
+        </div>
+
+        <div class="instructions">
+            <h3>Test Instructions:</h3>
+            <ol>
+                <li>Click the button below to open the Credit Analysis page in a new tab</li>
+                <li>Click any sample question OR type a question and press Enter</li>
+                <li>When the credit report appears, use the checklist below to verify scrolling</li>
+                <li>Test on different viewport sizes (resize your browser window)</li>
+            </ol>
+            <a href="http://localhost:3000" target="_blank" class="demo-link">
+                🚀 Open Credit Analysis Page
+            </a>
+        </div>
+
+        <div class="test-checklist">
+            <h2>📋 Manual Testing Checklist</h2>
+
+            <h3>Left Panel (Analysis Content) - Scrolling Test</h3>
+            <div class="checklist-item important">
+                <input type="checkbox" id="check1">
+                <label for="check1">
+                    <span class="critical">CRITICAL:</span> Can scroll down in the left panel to see ALL sections
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check2">
+                <label for="check2">
+                    Scrollbar appears on left panel when content exceeds viewport height
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check3">
+                <label for="check3">
+                    Can reach the bottom of the left panel content
+                </label>
+            </div>
+
+            <div class="checklist-item important">
+                <input type="checkbox" id="check4">
+                <label for="check4">
+                    <span class="critical">CRITICAL:</span> No content is cut off after "Risk Assessment" section
+                </label>
+            </div>
+
+            <h4>Expected Sections in Left Panel (verify all are visible):</h4>
+            <ul class="expected-sections">
+                <li>✓ Executive Summary</li>
+                <li>✓ Financial Overview</li>
+                <li>✓ Industry Position</li>
+                <li>✓ Risk Assessment</li>
+                <li>✓ Credit Spread Analysis</li>
+                <li>✓ Outlook</li>
+                <li>✓ Recommendation</li>
+                <li>✓ Footer with OmegaIntelligence.ai link</li>
+            </ul>
+
+            <h3>Right Panel (Widgets) - Scrolling Test</h3>
+            <div class="checklist-item important">
+                <input type="checkbox" id="check5">
+                <label for="check5">
+                    <span class="critical">CRITICAL:</span> Can scroll down in the right panel to see ALL 3 widgets
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check6">
+                <label for="check6">
+                    Scrollbar appears on right panel when content exceeds viewport height
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check7">
+                <label for="check7">
+                    Widget 1 visible: Company Info card (with rating, sector, outlook)
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check8">
+                <label for="check8">
+                    Widget 2 visible: Probability of Default chart
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check9">
+                <label for="check9">
+                    Widget 3 visible: Credit Spread chart
+                </label>
+            </div>
+
+            <div class="checklist-item important">
+                <input type="checkbox" id="check10">
+                <label for="check10">
+                    <span class="critical">CRITICAL:</span> No widgets are cut off, can scroll to the very bottom
+                </label>
+            </div>
+
+            <h3>Both Panels - Independent Scrolling</h3>
+            <div class="checklist-item">
+                <input type="checkbox" id="check11">
+                <label for="check11">
+                    Left panel scrolls independently from right panel
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check12">
+                <label for="check12">
+                    Right panel scrolls independently from left panel
+                </label>
+            </div>
+
+            <h3>Responsive Design Test</h3>
+            <div class="checklist-item">
+                <input type="checkbox" id="check13">
+                <label for="check13">
+                    Desktop view (1920x1080): Both panels visible side-by-side
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check14">
+                <label for="check14">
+                    Tablet view (768px width): Layout adapts, scrolling still works
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check15">
+                <label for="check15">
+                    Mobile view (375px width): Layout stacks, scrolling still works
+                </label>
+            </div>
+
+            <h3>Integration Test</h3>
+            <div class="checklist-item">
+                <input type="checkbox" id="check16">
+                <label for="check16">
+                    After viewing report, click "Back to Chat" button
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check17">
+                <label for="check17">
+                    Generate a second credit report by asking another question
+                </label>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check18">
+                <label for="check18">
+                    Verify scrolling works on the second report as well
+                </label>
+            </div>
+        </div>
+
+        <div class="css-preview">
+            <h2>✅ CSS Fix Applied</h2>
+            <p>The following CSS changes have been applied to <code>/frontend-vanilla-old/css/credit-analysis.css</code>:</p>
+
+            <h3>Line 576-584: Container with overflow: auto</h3>
+            <pre>.credit-report-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    padding: 0 24px 24px;
+    flex: 1;
+    <span class="success">overflow: auto;</span>  /* ✅ FIXED: Changed from overflow: hidden */
+    <span class="success">height: 100%;</span>     /* ✅ Ensures proper height calculation */
+}</pre>
+
+            <h3>Line 587-593: Left panel with vertical scrolling</h3>
+            <pre>.credit-report-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    <span class="success">overflow-y: auto;</span>  /* ✅ Enables vertical scrolling */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}</pre>
+
+            <h3>Line 644-649: Right panel with vertical scrolling</h3>
+            <pre>.credit-report-widgets {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    <span class="success">overflow-y: auto;</span>  /* ✅ Enables vertical scrolling */
+}</pre>
+        </div>
+
+        <div class="test-info">
+            <h3>✅ Expected Results:</h3>
+            <ul>
+                <li><span class="success">✅</span> Both panels scroll independently</li>
+                <li><span class="success">✅</span> No content cut-off</li>
+                <li><span class="success">✅</span> Scrollbars visible when needed</li>
+                <li><span class="success">✅</span> All content readable to the bottom</li>
+                <li><span class="success">✅</span> Responsive design works on all viewport sizes</li>
+            </ul>
+
+            <h3>❌ Issues to Report (if found):</h3>
+            <ul>
+                <li>Which panel has scrolling issues (left/right/both)?</li>
+                <li>Which sections are cut off?</li>
+                <li>At what viewport size does the issue occur?</li>
+                <li>Browser being used for testing</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h3>📊 Submit Test Results:</h3>
+            <button onclick="generateReport()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                Generate Test Report
+            </button>
+            <div id="report-output" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function generateReport() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let total = checkboxes.length;
+            let checked = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) checked++;
+            });
+
+            const percentage = (checked / total * 100).toFixed(1);
+            const output = document.getElementById('report-output');
+
+            let status = '';
+            let color = '';
+
+            if (percentage === 100) {
+                status = '🎉 ALL TESTS PASSED! Scrolling fix working perfectly.';
+                color = '#28a745';
+            } else if (percentage >= 80) {
+                status = '⚠️ Most tests passed, but some issues remain.';
+                color = '#ffc107';
+            } else {
+                status = '❌ Multiple issues found. Scrolling fix needs attention.';
+                color = '#dc3545';
+            }
+
+            output.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid ${color};">
+                    <h3 style="color: ${color}; margin-top: 0;">${status}</h3>
+                    <p><strong>Tests Passed:</strong> ${checked} / ${total} (${percentage}%)</p>
+                    <p><strong>Tests Failed:</strong> ${total - checked}</p>
+                    ${percentage < 100 ? '<p><em>Please review unchecked items and report specific issues.</em></p>' : ''}
+                </div>
+            `;
+        }
+
+        // Track checkbox changes
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const item = cb.closest('.checklist-item');
+                if (cb.checked) {
+                    item.style.background = '#d4edda';
+                    item.style.borderLeftColor = '#28a745';
+                } else {
+                    item.style.background = '#f8f9fa';
+                    item.style.borderLeftColor = '#6c757d';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
