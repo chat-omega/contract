@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Handler Diagnostic</title>
+    <style>
+        body {
+            font-family: 'Monaco', 'Courier New', monospace;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #569cd6;
+            margin-top: 30px;
+        }
+        .section {
+            background: #252526;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007acc;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .pass {
+            background: #0e4429;
+            border-left: 4px solid #2ea043;
+        }
+        .fail {
+            background: #6e1011;
+            border-left: 4px solid #f85149;
+        }
+        .warning {
+            background: #4d3800;
+            border-left: 4px solid #f0ad4e;
+        }
+        .info {
+            background: #0d1117;
+            border-left: 4px solid #58a6ff;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ce9178;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #d4d4d4;
+        }
+        .icon-pass::before { content: '✓ '; color: #2ea043; font-weight: bold; }
+        .icon-fail::before { content: '✗ '; color: #f85149; font-weight: bold; }
+        .icon-warn::before { content: '⚠ '; color: #f0ad4e; font-weight: bold; }
+        .icon-info::before { content: 'ℹ '; color: #58a6ff; font-weight: bold; }
+        .copy-btn {
+            font-size: 12px;
+            padding: 4px 8px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Click Handler Diagnostic Tool</h1>
+    <p>This tool diagnoses why the "Click to view" handler in ExtractionPanel is not firing.</p>
+
+    <div class="section">
+        <button onclick="runDiagnostics()">Run Full Diagnostics</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function addResult(title, status, message, details = null) {
+            const resultsDiv = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = `test-result ${status}`;
+
+            let html = `<span class="icon-${status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : status === 'warning' ? 'warn' : 'info'}"></span><strong>${title}</strong><br>${message}`;
+
+            if (details) {
+                html += `<button class="copy-btn" onclick="copyToClipboard(this, \`${details.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Copy Details</button>`;
+                html += `<pre>${details}</pre>`;
+            }
+
+            section.innerHTML = html;
+            resultsDiv.appendChild(section);
+        }
+
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = original, 2000);
+            });
+        }
+
+        async function runDiagnostics() {
+            clearResults();
+
+            // Test 1: Check if React app is loaded
+            addResult(
+                'Test 1: React App Loaded',
+                window.__REACT_DEVTOOLS_GLOBAL_HOOK__ ? 'pass' : 'fail',
+                window.__REACT_DEVTOOLS_GLOBAL_HOOK__
+                    ? 'React DevTools hook detected - React app is loaded'
+                    : 'React DevTools hook NOT found - React may not be loaded',
+                null
+            );
+
+            // Test 2: Check which bundle is loaded
+            const scripts = Array.from(document.querySelectorAll('script[src*="index-"]'));
+            const bundleInfo = scripts.map(s => {
+                const match = s.src.match(/index-([^-]+)-\.js/);
+                return { src: s.src, hash: match ? match[1] : 'unknown' };
+            });
+
+            addResult(
+                'Test 2: Loaded JavaScript Bundle',
+                bundleInfo.length > 0 ? 'info' : 'fail',
+                bundleInfo.length > 0
+                    ? `Found ${bundleInfo.length} bundle(s). Check if hash is "8ejwB37"`
+                    : 'No index-*.js bundle found!',
+                JSON.stringify(bundleInfo, null, 2)
+            );
+
+            // Test 3: Search for logging code in loaded scripts
+            const searchForLog = async () => {
+                try {
+                    const response = await fetch('/assets/index-8ejwB37-.js');
+                    const text = await response.text();
+                    const hasExtractionLog = text.includes('ExtractionPanel] Extraction clicked');
+                    const hasDocumentLog = text.includes('DocumentDetailPage] Extraction clicked');
+
+                    return {
+                        found: response.ok,
+                        hasExtractionLog,
+                        hasDocumentLog,
+                        size: text.length
+                    };
+                } catch (e) {
+                    return { found: false, error: e.message };
+                }
+            };
+
+            const bundleCheck = await searchForLog();
+            addResult(
+                'Test 3: Logging Code in Bundle',
+                bundleCheck.hasExtractionLog && bundleCheck.hasDocumentLog ? 'pass' : 'fail',
+                bundleCheck.found
+                    ? `Bundle loaded. ExtractionPanel log: ${bundleCheck.hasExtractionLog}, DocumentDetailPage log: ${bundleCheck.hasDocumentLog}`
+                    : `Failed to load bundle: ${bundleCheck.error}`,
+                bundleCheck.found ? `Bundle size: ${(bundleCheck.size / 1024).toFixed(2)} KB` : null
+            );
+
+            // Test 4: Check if ExtractionPanel component exists in DOM
+            const extractionPanels = document.querySelectorAll('[class*="ExtractionPanel"], [class*="w-96"][class*="bg-white"][class*="border-l"]');
+            addResult(
+                'Test 4: ExtractionPanel in DOM',
+                extractionPanels.length > 0 ? 'pass' : 'fail',
+                extractionPanels.length > 0
+                    ? `Found ${extractionPanels.length} potential ExtractionPanel container(s)`
+                    : 'ExtractionPanel container NOT found in DOM',
+                extractionPanels.length > 0 ? `Classes: ${Array.from(extractionPanels).map(p => p.className).join('\n')}` : null
+            );
+
+            // Test 5: Check for "Click to view" text in DOM
+            const clickToViewElements = Array.from(document.querySelectorAll('*')).filter(el =>
+                el.textContent.includes('Click to view')
+            );
+            addResult(
+                'Test 5: "Click to view" Text in DOM',
+                clickToViewElements.length > 0 ? 'pass' : 'fail',
+                clickToViewElements.length > 0
+                    ? `Found ${clickToViewElements.length} element(s) with "Click to view" text`
+                    : '"Click to view" text NOT found in DOM',
+                clickToViewElements.length > 0 ? clickToViewElements.map((el, i) =>
+                    `Element ${i + 1}:\n` +
+                    `  Tag: ${el.tagName}\n` +
+                    `  Classes: ${el.className}\n` +
+                    `  Text: ${el.textContent.substring(0, 100)}\n` +
+                    `  Parent classes: ${el.parentElement?.className || 'N/A'}`
+                ).join('\n\n') : null
+            );
+
+            // Test 6: Check for extraction divs with click handlers
+            const allDivs = document.querySelectorAll('div');
+            const extractionDivs = Array.from(allDivs).filter(div => {
+                const classes = div.className;
+                // Looking for divs with the specific extraction styling
+                return classes.includes('ml-6') &&
+                       classes.includes('p-3') &&
+                       classes.includes('rounded') &&
+                       classes.includes('border');
+            });
+
+            addResult(
+                'Test 6: Extraction Item Divs',
+                extractionDivs.length > 0 ? 'pass' : 'fail',
+                extractionDivs.length > 0
+                    ? `Found ${extractionDivs.length} potential extraction div(s)`
+                    : 'No extraction divs found with expected classes',
+                extractionDivs.length > 0 ? extractionDivs.map((div, i) =>
+                    `Div ${i + 1}:\n` +
+                    `  Classes: ${div.className}\n` +
+                    `  Has onclick: ${!!div.onclick}\n` +
+                    `  Cursor style: ${getComputedStyle(div).cursor}\n` +
+                    `  Pointer events: ${getComputedStyle(div).pointerEvents}\n` +
+                    `  Text content: ${div.textContent.substring(0, 100)}`
+                ).join('\n\n') : null
+            );
+
+            // Test 7: Check for MapPin icons (indicates navigable extractions)
+            const mapPinIcons = document.querySelectorAll('svg[class*="MapPinIcon"], svg path[d*="M15"]');
+            addResult(
+                'Test 7: MapPin Icons (Navigable Extractions)',
+                mapPinIcons.length > 0 ? 'pass' : 'warning',
+                mapPinIcons.length > 0
+                    ? `Found ${mapPinIcons.length} MapPin icon(s) - extractions with bbox/page data exist`
+                    : 'No MapPin icons found - extractions may not have bbox/page data',
+                null
+            );
+
+            // Test 8: Check browser console logs
+            const consoleLogs = [];
+            const originalLog = console.log;
+            const originalWarn = console.warn;
+            const originalError = console.error;
+
+            console.log = function(...args) {
+                consoleLogs.push({ type: 'log', args: args });
+                originalLog.apply(console, args);
+            };
+            console.warn = function(...args) {
+                consoleLogs.push({ type: 'warn', args: args });
+                originalWarn.apply(console, args);
+            };
+            console.error = function(...args) {
+                consoleLogs.push({ type: 'error', args: args });
+                originalError.apply(console, args);
+            };
+
+            const extractionLogs = consoleLogs.filter(log =>
+                JSON.stringify(log.args).includes('ExtractionPanel') ||
+                JSON.stringify(log.args).includes('DocumentDetailPage')
+            );
+
+            addResult(
+                'Test 8: Recent Console Logs',
+                'info',
+                `Captured ${consoleLogs.length} console messages. Check details for extraction-related logs.`,
+                extractionLogs.length > 0
+                    ? `Found ${extractionLogs.length} extraction-related logs:\n${JSON.stringify(extractionLogs, null, 2)}`
+                    : 'No extraction-related logs captured yet. This test captures logs AFTER running diagnostics.'
+            );
+
+            // Test 9: Check if extraction data exists in React props
+            addResult(
+                'Test 9: React Props Inspection',
+                'info',
+                'Open React DevTools and navigate to ExtractionPanel component',
+                'Look for:\n' +
+                '1. extractions prop - should have .results object\n' +
+                '2. onExtractionClick prop - should be a function\n' +
+                '3. Find an extraction div and check:\n' +
+                '   - extraction.bbox exists\n' +
+                '   - extraction.page exists\n' +
+                '   - canNavigate is true'
+            );
+
+            // Test 10: Manual click test instructions
+            addResult(
+                'Test 10: Manual Click Test',
+                'info',
+                'Follow these steps to test clicking',
+                '1. Open browser DevTools Console (F12)\n' +
+                '2. Navigate to document detail page with extractions\n' +
+                '3. Expand a field in the extraction panel\n' +
+                '4. Click on an extraction box (the gray box with text)\n' +
+                '5. Look for these logs in console:\n' +
+                '   [ExtractionPanel] Extraction clicked: {...}\n' +
+                '   [DocumentDetailPage] Extraction clicked: {...}\n' +
+                '   [PDFViewer] Scrolled to page X\n' +
+                '\n' +
+                'If NO logs appear, the click handler is not attached to the DOM element.'
+            );
+
+            // Test 11: Check for React event handler
+            const checkReactHandlers = () => {
+                const divs = Array.from(document.querySelectorAll('div[class*="ml-6"][class*="p-3"]'));
+                const divWithHandler = divs.find(div => {
+                    // Check if React has attached an event handler
+                    const keys = Object.keys(div);
+                    return keys.some(key => key.startsWith('__react'));
+                });
+
+                if (divWithHandler) {
+                    const reactKeys = Object.keys(divWithHandler).filter(key => key.startsWith('__react'));
+                    return {
+                        found: true,
+                        keys: reactKeys,
+                        sample: divWithHandler.className
+                    };
+                }
+                return { found: false };
+            };
+
+            const reactHandlerCheck = checkReactHandlers();
+            addResult(
+                'Test 11: React Event Handlers Attached',
+                reactHandlerCheck.found ? 'pass' : 'fail',
+                reactHandlerCheck.found
+                    ? 'Found React internal properties on extraction divs - React has rendered them'
+                    : 'No React internal properties found - React may not have rendered extraction divs',
+                reactHandlerCheck.found ? `React keys: ${reactHandlerCheck.keys.join(', ')}\nSample classes: ${reactHandlerCheck.sample}` : null
+            );
+
+            // Test 12: Service Worker / Cache check
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                addResult(
+                    'Test 12: Service Worker Check',
+                    registrations.length > 0 ? 'warning' : 'pass',
+                    registrations.length > 0
+                        ? `Found ${registrations.length} service worker(s) - may be caching old bundle`
+                        : 'No service workers found',
+                    registrations.length > 0
+                        ? 'Service workers found:\n' + registrations.map(r => r.scope).join('\n') + '\n\nTo clear: Run in console:\nnavigator.serviceWorker.getRegistrations().then(r => r.forEach(sw => sw.unregister()))'
+                        : null
+                );
+            } else {
+                addResult(
+                    'Test 12: Service Worker Check',
+                    'info',
+                    'Service Worker API not available in this browser',
+                    null
+                );
+            }
+
+            // Final summary
+            addResult(
+                '📋 Diagnostic Summary',
+                'info',
+                'Diagnostics complete. Review results above.',
+                'Next steps:\n' +
+                '1. If bundle has wrong hash → Hard refresh (Ctrl+Shift+R)\n' +
+                '2. If "Click to view" not in DOM → Check extraction data has bbox/page\n' +
+                '3. If divs exist but no click logs → Check React DevTools for props\n' +
+                '4. If service workers found → Clear them and refresh\n' +
+                '5. Share these results with development team'
+            );
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            console.log('Diagnostic tool loaded. Click "Run Full Diagnostics" to begin.');
+        });
+    </script>
+</body>
+</html>

@@ -26,6 +26,7 @@ from jose import jwt
 # Import async database layer
 from database_async import AsyncDatabase
 from extraction_service import ExtractionService
+from credit_analysis_service import CreditAnalysisService
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -57,6 +58,7 @@ security = HTTPBearer()  # For required auth
 security_optional = HTTPBearer(auto_error=False)  # For optional auth
 db = AsyncDatabase()
 extraction_service = None
+credit_analysis_service = None
 
 # Ensure upload directory exists
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -65,7 +67,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 @app.on_event("startup")
 async def startup_event():
     """Load workflows from database and initialize services on startup"""
-    global extraction_service
+    global extraction_service, credit_analysis_service
 
     # Clean up orphaned workflow assignments
     await db.cleanup_orphaned_assignments()
@@ -76,6 +78,10 @@ async def startup_event():
     # Initialize extraction service
     extraction_service = ExtractionService(db)
     print("✅ Extraction service initialized")
+
+    # Initialize credit analysis service
+    credit_analysis_service = CreditAnalysisService(db, extraction_service)
+    print("✅ Credit analysis service initialized")
 
 # Pydantic models
 class UserCreate(BaseModel):
@@ -287,12 +293,8 @@ async def register(user_data: UserCreate):
         expires_in = int(expiration_time.timestamp())
 
         return {
-            "success": True,
-            "tokens": {
-                "accessToken": access_token,
-                "refreshToken": access_token,  # Using same token for now
-                "expiresIn": expires_in
-            },
+            "access_token": access_token,
+            "token_type": "Bearer",
             "user": dict(UserResponse(**user)),
             "message": "Registration successful"
         }
@@ -355,12 +357,8 @@ async def login(user_data: UserLogin):
         user_response = {k: v for k, v in user.items() if k != "password_hash"}
 
         return {
-            "success": True,
-            "tokens": {
-                "accessToken": access_token,
-                "refreshToken": access_token,  # Using same token for now
-                "expiresIn": expires_in
-            },
+            "access_token": access_token,
+            "token_type": "Bearer",
             "user": dict(UserResponse(**user_response)),
             "message": "Login successful"
         }
@@ -422,15 +420,22 @@ async def get_fields(
 # Document types endpoints
 @app.get("/api/document-types")
 async def get_document_types():
-    """Get all document types organized by category (hierarchical structure)"""
+    """Get all document types organized by category (3-level hierarchical structure)"""
     try:
         document_types = await db.get_document_types_hierarchical()
+
+        # Calculate total types across all levels (now 3-level hierarchy)
+        total_types = sum(
+            len(sub_cat.get('types', []))
+            for cat in document_types
+            for sub_cat in cat.get('children', [])
+        )
 
         return {
             "success": True,
             "categories": document_types,
             "total_categories": len(document_types),
-            "total_types": sum(len(cat['types']) for cat in document_types)
+            "total_types": total_types
         }
     except Exception as e:
         print(f"Error fetching document types: {e}")
@@ -580,13 +585,25 @@ async def get_document_by_id(
 ):
     """Get document metadata by ID"""
     document = await db.get_document(document_id, user_id=current_user["id"])
-    
+
     if not document:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found"
         )
-    
+
+    # Add workflow information (same as in get_documents endpoint)
+    workflow_ids = await db.get_document_workflows(document["id"])
+    workflow_names = []
+
+    for wf_id in workflow_ids:
+        workflow = next((wf for wf in saved_workflows if wf['id'] == wf_id), None)
+        if workflow:
+            workflow_names.append(workflow['name'])
+
+    document["workflows"] = workflow_ids
+    document["workflowNames"] = workflow_names
+
     return document
 
 @app.get("/api/documents/{document_id}/content")
@@ -742,6 +759,37 @@ async def get_templates():
     """Get workflow templates"""
     templates = [
         {
+            'id': 'ma-due-diligence',
+            'name': 'M&A/Due Diligence',
+            'category': 'M&A',
+            'description': 'Best suited for understanding the basic information in a variety of agreements when doing due diligence.',
+            'fieldCategories': {
+                'Basic Information': ['Title', 'Parties', 'Date'],
+                'Term and Termination': ['Term and Renewal', 'Does the agreement auto renew?', 'Can the agreement be terminated for convenience?'],
+                'Boilerplate Provisions': ['Can the agreement be assigned?', 'What are the obligations and requirements resulting from a Change of Control?', 'Exclusivity', 'Non-Compete', 'Non-Solicit', 'Most Favored Nation', 'Can notice be given electronically?', 'Governing Law']
+            },
+            'fields': [
+                # Basic Information (3 fields)
+                '25d677a1-70d0-43c2-9b36-d079733dd020',  # Title
+                '98086156-f230-423c-b214-27f542e72708',  # Parties
+                'fc5ba010-671b-427f-82cb-95c02d4c704c',  # Date
+                # Term and Termination (3 fields)
+                '3b45b113-2b4d-42c0-a73d-cccaba4efdf6',  # Term and Renewal
+                'c0e6f4a1-4d5b-46ca-9e04-3a898a33dc99',  # Does the agreement auto renew?
+                'aeb035ac-b0c6-44fb-bbec-9bd3864f3036',  # Can the agreement be terminated for convenience?
+                # Boilerplate Provisions (8 fields)
+                '8d6970e4-1a44-4f4d-8fcf-3140a6634213',  # Can the agreement be assigned?
+                '7dc542ae-79f2-462f-962e-24f07e2c4a3e',  # What are the obligations and requirements resulting from a Change of Control?
+                'ec9b6b77-0eac-488b-a43c-486fc2940098',  # Exclusivity
+                'af3b7aea-6e51-4851-a763-555824c3ceb1',  # Non-Compete
+                '473457de-b82c-49b2-81a0-5b70303d6605',  # Non-Solicit
+                'd5596bb0-1bab-4569-a0a5-7d2117f19c44',  # Most Favored Nation
+                '47516578-8a4a-451d-8147-7cd84d4d5f1c',  # Can notice be given electronically?
+                'c83868ae-269a-4a1b-b2af-c53e5f91efca'   # Governing Law
+            ],
+            'documentTypes': ['Distribution Agt', 'Employment Related Agt', 'Governance Agt', 'IP Agt', 'Service Agt', 'Supply Agt']
+        },
+        {
             'id': 'msa-review',
             'name': 'MSA Review',
             'category': 'MSA/Org Playbook',
@@ -756,14 +804,6 @@ async def get_templates():
             'description': 'Review mutual non-disclosure agreements',
             'fields': ['Title', 'Parties', 'Date', 'Confidential Information', 'Term', 'Exceptions'],
             'documentTypes': ['NDA', 'Non-Disclosure Agreement', 'Confidentiality Agreement']
-        },
-        {
-            'id': 'ma-due-diligence',
-            'name': 'M&A/Due Diligence',
-            'category': 'M&A',
-            'description': 'Best suited for understanding the basic information in a variety of agreements when doing due diligence.',
-            'fields': ['25d677a1-70d0-43c2-9b36-d079733dd020', '98086156-f230-423c-b214-27f542e72708', 'fc5ba010-671b-427f-82cb-95c02d4c704c', '3b45b113-2b4d-42c0-a73d-cccaba4efdf6', 'c83868ae-269a-4a1b-b2af-c53e5f91efca', 'ec9b6b77-0eac-488b-a43c-486fc2940098'],
-            'documentTypes': ['Distribution Agt', 'Employment Related Agt', 'Governance Agt', 'IP Agt', 'Service Agt', 'Supply Agt']
         },
         {
             'id': 'leaselens-short',
@@ -889,8 +929,8 @@ async def get_templates():
                 '67e6f362-fd4e-4ceb-8898-9cfc5c9e5702',  # Default for Insolvency
                 'd0319eca-8308-4ea3-a596-5243896c45b0',  # Default for Judgment/Creditors' Process
                 '74978e3e-8f1d-4745-a885-e6da3ccbadf1',  # Default for Invalidity/Unlawfulness
-                'f1ba80f3-cbc2-4334-8efc-94c88fa7f10b',  # Default for Non-Compliance with Pension Regulations
-                'e85e4dbd-35c8-4fad-bebc-8e2a02a36e67',  # Cross Default/Cross Acceleration
+                '08b502a1-9866-487c-9ae0-929a60c19e9f',  # Default for Pension Regulations Non-Compliance
+                '07d09e84-dfbf-4015-a2b0-6c8261dcc78a',  # Default for Cross Default/Acceleration
 
                 # Lender Mechanics, Amendments & Transfers (4 fields)
                 'bc6d7f7c-a03a-4b92-b5b1-b21fc67108dc',  # Affected Lender Approval
@@ -904,6 +944,220 @@ async def get_templates():
                 '47516578-8a4a-451d-8147-7cd84d4d5f1c'   # Can notice be given electronically?
             ],
             'documentTypes': ['Debt Related Agt', 'Debt Supplemental Agt']
+        },
+        # MSA/Org Playbook Templates
+        {
+            'id': 'generic-agreement-review',
+            'name': 'Generic Agreement Review',
+            'category': 'MSA/Org Playbook',
+            'description': 'This is a generic workflow template to review documents for common agreement terms',
+            'fields': ['Title', 'Parties', 'Date', 'Term', 'Termination', 'Payment Terms', 'Governing Law', 'Liability'],
+            'documentTypes': ['Distribution Agt', 'Service Agt', 'Supply Agt']
+        },
+        {
+            'id': 'miscellaneous-agreements',
+            'name': 'Miscellaneous Agreements',
+            'category': 'MSA/Org Playbook',
+            'description': 'A workflow to review a variety of diverse agreements to identify key provisions and optionally add annotations',
+            'fields': ['Title', 'Parties', 'Date', 'Term', 'Payment Terms', 'Indemnification', 'Warranties'],
+            'documentTypes': ['Distribution Agt', 'Service Agt', 'Supply Agt', 'IP Agt']
+        },
+        {
+            'id': 'general-business-agreements',
+            'name': 'General Business Agreements',
+            'category': 'MSA/Org Playbook',
+            'description': 'Recommended use case for - General Terms Agreement',
+            'fields': ['Title', 'Parties', 'Date', 'Term', 'Pricing', 'Termination', 'Liability'],
+            'documentTypes': ['Distribution Agt', 'Service Agt']
+        },
+        {
+            'id': 'corporate-direct-form',
+            'name': 'Corporate - Direct Form',
+            'category': 'MSA/Org Playbook',
+            'description': 'Workflow for Corporate Direct Form',
+            'fields': ['Title', 'Parties', 'Date', 'Corporate Structure', 'Ownership', 'Directors'],
+            'documentTypes': ['Governance Agt']
+        },
+        {
+            'id': 'customer-mining-terms',
+            'name': 'Customer Agreements - Mining Terms',
+            'category': 'MSA/Org Playbook',
+            'description': 'Use this to identify key terms in customer agreements for data mining',
+            'fields': ['Title', 'Parties', 'Date', 'Payment Terms', 'Termination', 'Renewal', 'Pricing'],
+            'documentTypes': ['Distribution Agt', 'Service Agt']
+        },
+        {
+            'id': 'customer-review-terms',
+            'name': 'Customer Agreements - Review terms',
+            'category': 'MSA/Org Playbook',
+            'description': 'Recommended use case for - Customer Agreements General review',
+            'fields': ['Title', 'Parties', 'Date', 'Service Level', 'Payment Terms', 'Termination'],
+            'documentTypes': ['Service Agt', 'Distribution Agt']
+        },
+        # Lease Playbook Templates
+        {
+            'id': 'lease-long-form',
+            'name': 'Lease or Lease (Long Form)',
+            'category': 'Lease Playbook',
+            'description': 'This is a generic workflow template to review documents for common lease provisions',
+            'fields': ['Property Address', 'Parties', 'Date', 'Lease Term', 'Rent Amount', 'Security Deposit', 'Maintenance Obligations'],
+            'documentTypes': ['Real Estate Agt']
+        },
+        {
+            'id': 'commercial-lease-review',
+            'name': 'Commercial Lease Agreement Review',
+            'category': 'Lease Playbook',
+            'description': 'Recommended use case for - Reviewing Commercial Real Estate Leases',
+            'fields': ['Property Address', 'Parties', 'Lease Term', 'Base Rent', 'Operating Expenses', 'Use Restrictions'],
+            'documentTypes': ['Real Estate Agt']
+        },
+        # NDA Templates
+        {
+            'id': 'nda-generic',
+            'name': 'NDAs Generic Review',
+            'category': 'NDA',
+            'description': 'NDAs or Non Disclosure Agreements to review confidentiality and non-disclosure provisions',
+            'fields': ['Title', 'Parties', 'Date', 'Confidential Information', 'Term', 'Obligations', 'Exceptions'],
+            'documentTypes': ['Restrictive Covenant Agt', 'NDA']
+        },
+        {
+            'id': 'third-party-nda',
+            'name': 'Third Party NDA',
+            'category': 'NDA',
+            'description': 'Third Party Vendor NDA Review',
+            'fields': ['Title', 'Parties', 'Date', 'Confidential Information', 'Use Restrictions', 'Return Obligations'],
+            'documentTypes': ['Restrictive Covenant Agt']
+        },
+        # Procurement Agreements Templates
+        {
+            'id': 'procurement-generic',
+            'name': 'Procurement Agreements Generic',
+            'category': 'Procurement Agreements',
+            'description': 'This is a generic workflow to review procurement agreements for common agreement terms',
+            'fields': ['Title', 'Parties', 'Date', 'Scope of Work', 'Payment Terms', 'Delivery Terms', 'Warranties'],
+            'documentTypes': ['Supply Agt', 'Service Agt']
+        },
+        {
+            'id': 'master-service-agreements',
+            'name': 'Master Service Agreements',
+            'category': 'Procurement Agreements',
+            'description': 'Recommended use case for - MSA contracts & amendments',
+            'fields': ['Title', 'Parties', 'Date', 'Services', 'Payment Terms', 'Term', 'Termination', 'Liability'],
+            'documentTypes': ['Service Agt', 'MSA']
+        },
+        {
+            'id': 'statement-of-work',
+            'name': 'Statement of Work',
+            'category': 'Procurement Agreements',
+            'description': 'Review SOW documents',
+            'fields': ['Title', 'Parties', 'Date', 'Project Scope', 'Deliverables', 'Timeline', 'Payment Schedule'],
+            'documentTypes': ['Service Agt']
+        },
+        {
+            'id': 'purchase-orders',
+            'name': 'Purchase Orders',
+            'category': 'Procurement Agreements',
+            'description': 'PO review workflow',
+            'fields': ['PO Number', 'Vendor', 'Date', 'Items', 'Quantity', 'Price', 'Delivery Date'],
+            'documentTypes': ['Supply Agt']
+        },
+        # Litigation Templates
+        {
+            'id': 'litigation-generic',
+            'name': 'Litigation Documents Generic',
+            'category': 'Litigations - Work From SAP',
+            'description': 'This is a generic workflow template to review litigation documents',
+            'fields': ['Case Number', 'Parties', 'Date Filed', 'Court', 'Claims', 'Relief Sought'],
+            'documentTypes': ['Litigation Document']
+        },
+        {
+            'id': 'legal-brief-review',
+            'name': 'Legal Brief Review',
+            'category': 'Litigations - Work From SAP',
+            'description': 'Review legal briefs and motions',
+            'fields': ['Case Number', 'Filing Party', 'Date', 'Motion Type', 'Arguments', 'Citations'],
+            'documentTypes': ['Litigation Document']
+        },
+        {
+            'id': 'discovery-documents',
+            'name': 'Discovery Documents',
+            'category': 'Litigations - Work From SAP',
+            'description': 'Review discovery documents and responses',
+            'fields': ['Case Number', 'Document Type', 'Date', 'Requesting Party', 'Responses', 'Objections'],
+            'documentTypes': ['Litigation Document']
+        },
+        {
+            'id': 'court-filings',
+            'name': 'Court Filings',
+            'category': 'Litigations - Work From SAP',
+            'description': 'Review court filings and pleadings',
+            'fields': ['Case Number', 'Filing Type', 'Date', 'Court', 'Filing Party', 'Relief Requested'],
+            'documentTypes': ['Litigation Document']
+        },
+        {
+            'id': 'settlement-agreements',
+            'name': 'Settlement Agreements',
+            'category': 'Litigations - Work From SAP',
+            'description': 'Review settlement agreements and releases',
+            'fields': ['Parties', 'Date', 'Settlement Amount', 'Payment Terms', 'Release Terms', 'Confidentiality'],
+            'documentTypes': ['Settlement Agt']
+        },
+        # Employment Templates
+        {
+            'id': 'employment-generic',
+            'name': 'Employment Agreements Generic',
+            'category': 'Employment Agreements',
+            'description': 'This is a generic workflow template to review employment agreements',
+            'fields': ['Employee Name', 'Position', 'Start Date', 'Salary', 'Benefits', 'Termination Terms'],
+            'documentTypes': ['Employment Related Agt']
+        },
+        {
+            'id': 'executive-employment',
+            'name': 'Executive Employment Agreements',
+            'category': 'Employment Agreements',
+            'description': 'Review C-suite and executive level employment contracts',
+            'fields': ['Executive Name', 'Title', 'Start Date', 'Base Salary', 'Bonus', 'Equity', 'Severance', 'Non-Compete'],
+            'documentTypes': ['Employment Related Agt']
+        },
+        {
+            'id': 'standard-employment',
+            'name': 'Standard Employment Contract',
+            'category': 'Employment Agreements',
+            'description': 'Review standard employee contracts',
+            'fields': ['Employee Name', 'Position', 'Department', 'Salary', 'Benefits', 'Vacation', 'Termination'],
+            'documentTypes': ['Employment Related Agt']
+        },
+        {
+            'id': 'independent-contractor',
+            'name': 'Independent Contractor Agreement',
+            'category': 'Employment Agreements',
+            'description': 'Review independent contractor agreements',
+            'fields': ['Contractor Name', 'Services', 'Compensation', 'Term', 'Termination', 'IP Ownership'],
+            'documentTypes': ['Service Agt']
+        },
+        {
+            'id': 'consulting-services',
+            'name': 'Consulting Services Agreement',
+            'category': 'Employment Agreements',
+            'description': 'Review consulting agreements',
+            'fields': ['Consultant', 'Services', 'Fees', 'Term', 'Deliverables', 'Confidentiality'],
+            'documentTypes': ['Service Agt']
+        },
+        {
+            'id': 'non-compete-non-solicit',
+            'name': 'Non-Competition and Non-Solicitation Agreements',
+            'category': 'Employment Agreements',
+            'description': 'Review restrictive covenant agreements',
+            'fields': ['Employee', 'Effective Date', 'Non-Compete Duration', 'Territory', 'Non-Solicit Terms', 'Consideration'],
+            'documentTypes': ['Restrictive Covenant Agt']
+        },
+        {
+            'id': 'severance-separation',
+            'name': 'Severance and Separation Agreements',
+            'category': 'Employment Agreements',
+            'description': 'Review severance and separation agreements',
+            'fields': ['Employee', 'Separation Date', 'Severance Amount', 'Benefits Continuation', 'Release', 'Non-Disparagement'],
+            'documentTypes': ['Employment Related Agt']
         }
     ]
     return templates
@@ -995,54 +1249,50 @@ async def validate_field_ids(field_ids: list, db_instance: AsyncDatabase) -> tup
     Validate that all field_ids exist in the fields table
     Returns (is_valid, invalid_field_ids)
 
-    Note: If field names are provided instead of UUIDs, they will be validated against field names in database
+    Note: Only UUID-format field_ids (Zuva fields) are validated.
+    Custom field names are allowed without validation to support user-created fields.
     """
     if not field_ids:
         return True, []
 
-    # Separate field IDs (UUIDs) from field names
+    # Only validate UUID-format field_ids (Zuva fields)
+    # Custom field names/IDs are allowed without validation
     import re
     uuid_pattern = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    field_id_list = [fid for fid in field_ids if re.match(uuid_pattern, fid, re.IGNORECASE)]
-    field_name_list = [fid for fid in field_ids if not re.match(uuid_pattern, fid, re.IGNORECASE)]
+    zuva_field_ids = [fid for fid in field_ids if re.match(uuid_pattern, fid, re.IGNORECASE)]
+    custom_field_ids = [fid for fid in field_ids if not re.match(uuid_pattern, fid, re.IGNORECASE)]
+
+    # Log what we're validating
+    print(f"[validate_field_ids] Total: {len(field_ids)}, Zuva UUIDs: {len(zuva_field_ids)}, Custom: {len(custom_field_ids)}")
+
+    # Skip validation if no Zuva field_ids to validate (all custom fields are allowed)
+    if not zuva_field_ids:
+        print(f"[validate_field_ids] Skipping validation - all fields are custom (non-UUID)")
+        return True, []
 
     invalid_ids = []
 
-    # Validate field IDs (UUIDs)
-    if field_id_list:
-        placeholders = ','.join(['?'] * len(field_id_list))
-        query = f"SELECT field_id FROM fields WHERE field_id IN ({placeholders})"
+    # Validate Zuva field IDs (UUIDs) against database
+    placeholders = ','.join(['?'] * len(zuva_field_ids))
+    query = f"SELECT field_id FROM fields WHERE field_id IN ({placeholders})"
 
-        try:
-            import aiosqlite
-            async with await db_instance.get_connection() as conn:
-                conn.row_factory = None  # We only need values
-                cursor = await conn.execute(query, tuple(field_id_list))
-                results = await cursor.fetchall()
-                valid_ids = {row[0] for row in results}
+    try:
+        import aiosqlite
+        async with aiosqlite.connect(db_instance.db_path) as conn:
+            conn.row_factory = None  # We only need values
+            cursor = await conn.execute(query, tuple(zuva_field_ids))
+            results = await cursor.fetchall()
+            valid_ids = {row[0] for row in results}
 
-                invalid_ids.extend([fid for fid in field_id_list if fid not in valid_ids])
-        except Exception as e:
-            print(f"Error validating field_ids: {e}")
-            raise
+            invalid_ids = [fid for fid in zuva_field_ids if fid not in valid_ids]
 
-    # Validate field names
-    if field_name_list:
-        placeholders = ','.join(['?'] * len(field_name_list))
-        query = f"SELECT name FROM fields WHERE name IN ({placeholders})"
-
-        try:
-            import aiosqlite
-            async with await db_instance.get_connection() as conn:
-                conn.row_factory = None  # We only need values
-                cursor = await conn.execute(query, tuple(field_name_list))
-                results = await cursor.fetchall()
-                valid_names = {row[0] for row in results}
-
-                invalid_ids.extend([fname for fname in field_name_list if fname not in valid_names])
-        except Exception as e:
-            print(f"Error validating field names: {e}")
-            raise
+            if invalid_ids:
+                print(f"[validate_field_ids] Invalid Zuva field_ids: {invalid_ids}")
+            else:
+                print(f"[validate_field_ids] All {len(zuva_field_ids)} Zuva field_ids validated successfully")
+    except Exception as e:
+        print(f"Error validating field_ids: {e}")
+        raise
 
     return len(invalid_ids) == 0, invalid_ids
 
@@ -1116,18 +1366,44 @@ async def get_saved_workflows(current_user: Dict[str, Any] = Depends(get_current
         return saved_workflows
 
 @app.get("/api/workflows/saved/{workflow_id}")
-async def get_saved_workflow_by_id(workflow_id: str):
-    """Get a specific saved workflow by ID"""
-    # Find workflow in saved_workflows list
-    workflow = next((wf for wf in saved_workflows if wf['id'] == workflow_id), None)
+async def get_saved_workflow_by_id(
+    workflow_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Get a specific saved workflow by ID from database"""
+    try:
+        # Get workflow from database for current user
+        workflow = await db.get_workflow(workflow_id, current_user['id'])
 
-    if not workflow:
+        if not workflow:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow not found"
+            )
+
+        # Convert database workflow to API format
+        workflow_dict = {
+            'id': workflow['id'],
+            'name': workflow['name'],
+            'description': workflow.get('description', ''),
+            'fields': json.loads(workflow['fields']) if workflow['fields'] else [],
+            'documentTypes': json.loads(workflow['document_types']) if workflow['document_types'] else [],
+            'status': workflow.get('status', 'active'),
+            'createdAt': workflow.get('created_at', ''),
+            'updatedAt': workflow.get('updated_at', ''),
+            'scoringEnabled': workflow.get('scoring_enabled', False)
+        }
+
+        return workflow_dict
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"⚠️  Error loading workflow {workflow_id}: {e}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workflow not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to load workflow: {str(e)}"
         )
-
-    return workflow
 
 @app.post("/api/workflows/saved/{workflow_id}/edit")
 async def create_edit_session_from_saved_workflow(workflow_id: str):
@@ -1841,8 +2117,8 @@ async def create_workflow_from_template(workflow_id: str, template_data: Workflo
                     {'fieldId': '67e6f362-fd4e-4ceb-8898-9cfc5c9e5702', 'name': 'Default for Insolvency'},
                     {'fieldId': 'd0319eca-8308-4ea3-a596-5243896c45b0', 'name': 'Default for Judgment/Creditors\' Process'},
                     {'fieldId': '74978e3e-8f1d-4745-a885-e6da3ccbadf1', 'name': 'Default for Invalidity/Unlawfulness'},
-                    {'fieldId': 'f1ba80f3-cbc2-4334-8efc-94c88fa7f10b', 'name': 'Default for Non-Compliance with Pension Regulations'},
-                    {'fieldId': 'e85e4dbd-35c8-4fad-bebc-8e2a02a36e67', 'name': 'Cross Default/Cross Acceleration'}
+                    {'fieldId': '08b502a1-9866-487c-9ae0-929a60c19e9f', 'name': 'Default for Pension Regulations Non-Compliance'},
+                    {'fieldId': '07d09e84-dfbf-4015-a2b0-6c8261dcc78a', 'name': 'Default for Cross Default/Acceleration'}
                 ],
                 'Lender Mechanics, Amendments & Transfers': [
                     {'fieldId': 'bc6d7f7c-a03a-4b92-b5b1-b21fc67108dc', 'name': 'Affected Lender Approval'},
@@ -2193,26 +2469,74 @@ async def _enrich_field_metadata(field_id: str) -> Dict[str, Any]:
 
 def _enrich_extraction_bbox(extraction: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Enrich extraction with bbox from spans if bbox is null
+    Enrich extraction with bbox AND page from spans if missing
     This handles cached data that was stored before bbox extraction was added
 
     Args:
         extraction: Single extraction object
 
     Returns:
-        Extraction with bbox populated from spans if needed
+        Extraction with bbox and page populated from spans if needed
     """
-    # If bbox already exists, return as-is
-    if extraction.get('bbox') is not None:
-        return extraction
+    print(f"[DEBUG] _enrich_extraction_bbox called - Before: page={extraction.get('page')}, bbox={extraction.get('bbox')}")
 
-    # Try to extract bbox from spans
+    # Try to extract bbox and page from spans
     spans = extraction.get('spans', [])
+    print(f"[DEBUG] Found {len(spans)} spans")
+
     if spans and len(spans) > 0:
         first_span = spans[0]
+
+        # Extract page number from span's pages dict if missing (CRITICAL FIX!)
+        if extraction.get('page') is None:
+            pages_data = first_span.get('pages')
+            if pages_data:
+                # Handle pages as dict with 'start'/'end' keys
+                if isinstance(pages_data, dict):
+                    page = pages_data.get('start')
+                    if page is not None:
+                        # Ensure page is an integer
+                        extraction['page'] = int(page) if not isinstance(page, int) else page
+                        print(f"[DEBUG] Set page from span.pages.start: {extraction['page']} (type: {type(extraction['page']).__name__})")
+                # Handle pages as simple integer (fallback)
+                elif isinstance(pages_data, int):
+                    extraction['page'] = pages_data
+                    print(f"[DEBUG] Set page from span.pages (int): {extraction['page']}")
+                # Handle pages as list (take first element)
+                elif isinstance(pages_data, list) and len(pages_data) > 0:
+                    page = pages_data[0]
+                    extraction['page'] = int(page) if not isinstance(page, int) else page
+                    print(f"[DEBUG] Set page from span.pages[0]: {extraction['page']}")
+
+        # Extract bbox from span
         bboxes = first_span.get('bboxes', [])
-        if bboxes and len(bboxes) > 0:
+        bounds_from_span = first_span.get('bounds')  # Some formats have bounds directly on span
+
+        print(f"[DEBUG] First span has {len(bboxes)} bboxes, direct bounds: {bounds_from_span is not None}")
+
+        # Try to get bbox from span.bounds first (simpler format)
+        if extraction.get('bbox') is None and bounds_from_span:
+            extraction['bbox'] = [
+                bounds_from_span.get('left'),
+                bounds_from_span.get('bottom'),
+                bounds_from_span.get('right'),
+                bounds_from_span.get('top')
+            ]
+            print(f"[DEBUG] Set bbox from span.bounds: {extraction['bbox']}")
+
+        # Otherwise try bboxes array
+        elif extraction.get('bbox') is None and bboxes and len(bboxes) > 0:
             first_bbox_obj = bboxes[0]
+            print(f"[DEBUG] First bbox object: {first_bbox_obj}")
+
+            # Extract page number from bbox if still missing
+            if extraction.get('page') is None:
+                page = first_bbox_obj.get('page')
+                if page is not None:
+                    extraction['page'] = int(page) if not isinstance(page, int) else page
+                    print(f"[DEBUG] Set page from bbox.page: {extraction['page']}")
+
+            # Extract bbox bounds
             bounds = first_bbox_obj.get('bounds', [])
             if bounds and len(bounds) > 0:
                 bound = bounds[0]
@@ -2223,7 +2547,23 @@ def _enrich_extraction_bbox(extraction: Dict[str, Any]) -> Dict[str, Any]:
                     bound.get('right'),
                     bound.get('top')
                 ]
+                print(f"[DEBUG] Set bbox from bbox.bounds: {extraction['bbox']}")
 
+    # VALIDATION: Ensure text field is always a string, not an array or object
+    text_value = extraction.get('text')
+    if text_value is not None:
+        if not isinstance(text_value, str):
+            # If text is not a string (e.g., it's a list, dict, or other type), log error
+            print(f"[ERROR] Invalid text field type: {type(text_value).__name__}. Value: {text_value}")
+            print(f"[ERROR] This indicates data corruption. Converting to string representation.")
+            # Convert to string for display, but this is a sign of data corruption
+            extraction['text'] = str(text_value) if text_value else ''
+        elif text_value.startswith('Bbox:') or text_value.startswith('[') and text_value.endswith(']'):
+            # Detect if text looks like bbox coordinates
+            print(f"[ERROR] Text field appears to contain bbox data: {text_value[:50]}...")
+            print(f"[ERROR] This indicates data corruption in the database.")
+
+    print(f"[DEBUG] _enrich_extraction_bbox - After: page={extraction.get('page')}, bbox={extraction.get('bbox')}")
     return extraction
 
 
@@ -2297,7 +2637,8 @@ async def _get_single_workflow_results(document_id: str, workflow_id: int) -> Di
             print(f"Warning: Could not fetch workflow {workflow_id}: {e}")
 
         # Build response with enriched field details
-        enriched_fields = {}
+        # Transform to match frontend TypeScript interface: FieldExtraction
+        enriched_results = {}
 
         # Iterate through extraction results and enrich with metadata
         for field_id, field_results in extraction_data.items():
@@ -2309,12 +2650,17 @@ async def _get_single_workflow_results(document_id: str, workflow_id: int) -> Di
 
             # Enrich extractions with bbox from spans if needed
             extractions_list = field_results if isinstance(field_results, list) else [field_results]
+            print(f"[DEBUG] Field {field_id}: Processing {len(extractions_list)} extractions")
             enriched_extractions = [_enrich_extraction_bbox(ext) for ext in extractions_list]
+            print(f"[DEBUG] Field {field_id}: Enriched extractions sample: {enriched_extractions[0] if enriched_extractions else 'None'}")
 
-            # Structure: { field_id: { metadata, extractions, answers, answerOptions } }
+            # Transform to match frontend FieldExtraction interface
+            # { field_id, field_name?, extractions, metadata?, hasAnswers?, answers?, answerOptions? }
             field_data = {
-                'metadata': field_metadata,
-                'extractions': enriched_extractions
+                'field_id': field_id,
+                'field_name': field_metadata.get('name', '') if field_metadata else '',
+                'extractions': enriched_extractions,
+                'metadata': field_metadata  # Keep metadata for additional info
             }
 
             # Add answer-specific data if available
@@ -2322,23 +2668,35 @@ async def _get_single_workflow_results(document_id: str, workflow_id: int) -> Di
                 field_data['hasAnswers'] = True
                 field_data['answers'] = field_answer_metadata.get('answers', [])  # [{option: "c", value: "..."}]
                 field_data['answerOptions'] = field_answer_metadata.get('answer_options', {})  # {a: "...", b: "..."}
-                field_data['fieldName'] = field_answer_metadata.get('field_name', '')
+                # Override field_name with answer metadata if available
+                if field_answer_metadata.get('field_name'):
+                    field_data['field_name'] = field_answer_metadata.get('field_name', '')
             else:
                 field_data['hasAnswers'] = False
 
-            enriched_fields[field_id] = field_data
+            enriched_results[field_id] = field_data
 
+        # Response matches frontend ExtractionResult interface
         response = {
             "status": "complete",
-            "documentId": document_id,
-            "workflowId": workflow_id,
-            "workflowName": workflow_name,
-            "extractedAt": extraction.get('completed_at'),
-            "startedAt": extraction.get('started_at'),
-            "createdAt": extraction.get('created_at'),
-            "fieldCount": len(enriched_fields),
-            "fields": enriched_fields
+            "document_id": document_id,  # Changed from documentId to match TypeScript
+            "workflow_id": workflow_id,  # Changed from workflowId to match TypeScript
+            "workflow_name": workflow_name,  # Changed from workflowName for consistency
+            "completed_at": extraction.get('completed_at'),  # Match TypeScript interface
+            "started_at": extraction.get('started_at'),
+            "created_at": extraction.get('created_at'),
+            "field_count": len(enriched_results),
+            "results": enriched_results  # Changed from fields to results to match TypeScript
         }
+
+        print(f"[DEBUG] Returning extraction results for document {document_id}, workflow {workflow_id}")
+        print(f"[DEBUG] Total fields: {len(enriched_results)}")
+        if enriched_results:
+            first_field_id = list(enriched_results.keys())[0]
+            first_field = enriched_results[first_field_id]
+            print(f"[DEBUG] First field sample: field_id={first_field['field_id']}, field_name={first_field.get('field_name')}, extraction_count={len(first_field['extractions'])}")
+            if first_field['extractions']:
+                print(f"[DEBUG] First extraction: page={first_field['extractions'][0].get('page')}, bbox={first_field['extractions'][0].get('bbox')}")
 
         return response
 
@@ -2364,7 +2722,7 @@ async def _get_all_workflow_results(document_id: str) -> Dict[str, Any]:
             return {
                 "status": "not_found",
                 "message": "No extractions found for this document",
-                "documentId": document_id,
+                "document_id": document_id,  # Changed from documentId
                 "workflows": []
             }
 
@@ -2382,14 +2740,14 @@ async def _get_all_workflow_results(document_id: str) -> Dict[str, Any]:
                 print(f"Warning: Could not get results for workflow {workflow_id}: {e}")
                 workflow_results.append({
                     "status": "error",
-                    "workflowId": workflow_id,
+                    "workflow_id": workflow_id,  # Changed from workflowId
                     "message": f"Error retrieving results: {str(e)}"
                 })
 
         return {
             "status": "success",
-            "documentId": document_id,
-            "workflowCount": len(workflow_results),
+            "document_id": document_id,  # Changed from documentId
+            "workflow_count": len(workflow_results),  # Changed from workflowCount
             "workflows": workflow_results
         }
 
@@ -2519,167 +2877,170 @@ async def get_extraction_results(
             detail=f"Failed to get extraction results: {str(e)}"
         )
 
-# ==================== Market Maps API Endpoints ====================
+# ==================== Credit Analysis API Endpoints ====================
 
-@app.get("/api/market-maps/trending")
-async def get_market_trends():
-    """Get trending market data for visualization"""
-    return {
-        "success": True,
-        "data": {
-            "marketName": "M&A Targets for Goqii - Digital Health, Wellness, and Connected Wearables",
-            "growthRate": 15,
-            "lastUpdated": "2025-10-17T16:00:00Z",
-            "trends": [
-                {
-                    "id": 1,
-                    "title": "Convergence of Health Data Ecosystems",
-                    "description": "The market is shifting rapidly toward platforms that seamlessly integrate wearable data with electronic health records, insurance systems, and clinical workflows.",
-                    "color": "blue"
-                },
-                {
-                    "id": 2,
-                    "title": "Personalized Preventive Care at Scale",
-                    "description": "Advances in AI-driven analytics and longitudinal data collection are fueling the rise of hyper-personalized, preventive health solutions.",
-                    "color": "green"
-                }
-            ]
+@app.post("/api/credit-analysis/upload")
+async def upload_credit_document(
+    file: UploadFile = File(...),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Upload a credit agreement document for analysis
+    Automatically starts extraction using Credit Agreement workflow
+    """
+    try:
+        # Validate file type
+        if not file.filename.lower().endswith('.pdf'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only PDF files are supported for credit analysis"
+            )
+
+        # Validate file size
+        file_content = await file.read()
+        if len(file_content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File size exceeds maximum allowed size of {MAX_UPLOAD_SIZE / (1024*1024)}MB"
+            )
+
+        # Reset file pointer
+        await file.seek(0)
+
+        # Generate unique document ID and file path
+        document_id = str(uuid.uuid4())
+        file_extension = Path(file.filename).suffix
+        safe_filename = f"{document_id}{file_extension}"
+        file_path = UPLOAD_DIR / safe_filename
+
+        # Save file
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(file_content)
+
+        # Create document record
+        document_data = {
+            'id': document_id,
+            'name': file.filename,
+            'file_path': str(file_path),
+            'file_size': len(file_content),
+            'file_type': file.content_type or 'application/pdf',
+            'status': 'uploaded',
+            'user_id': current_user["id"]
         }
-    }
 
-@app.get("/api/market-maps/market-size")
-async def get_market_size():
-    """Get market size metrics and data"""
-    return {
-        "success": True,
-        "data": {
-            "estimatedCompanies": 700,
-            "currentMarketSize": None,
-            "growthRateClass": None,
-            "segments": [
-                {
-                    "name": "Wearable Electronics",
-                    "value": 82200000000,
-                    "year": 2025,
-                    "source": "https://www.rdworldonline.com/global-wearable-electronics-market"
-                },
-                {
-                    "name": "Wearable Medical Devices",
-                    "value": 33990000000,
-                    "year": 2025,
-                    "source": "https://www.fortunebusinessinsights.com/wearable-medical-devices-market"
-                },
-                {
-                    "name": "Smartwatches",
-                    "value": 49530000000,
-                    "year": 2025,
-                    "source": "https://www.statista.com/statistics/wearables-market-value"
-                }
-            ]
-        }
-    }
+        await db.create_document(document_data)
+        print(f"✅ Credit document uploaded: {document_id}")
 
-@app.get("/api/market-maps/strategies")
-async def get_ma_strategies():
-    """Get M&A strategy recommendations"""
-    return {
-        "success": True,
-        "data": {
-            "currentState": {
-                "offerings": "AI-powered preventive healthcare platform integrating consumer wearables (proprietary GOQii band), connected fitness apps (GOQii Care), and chronic disease management.",
-                "keyAssets": "Large Indian user base (millions), proprietary wearable hardware, data-based ecosystem (API with apps), partnerships with corporates and insurers.",
-                "financialProfile": "Estimated at Series C+ level, $30–70M revenue per year",
-                "currentTrajectory": "Rapid expansion into B2B (employer health benefits, insurance)"
-            },
-            "acquisitionTargets": [
-                {
-                    "id": 1,
-                    "type": "AI Health Analytics Startups",
-                    "valueRange": "5-20M",
-                    "growthRate": "20-40% CAGR",
-                    "description": "Early-commercial-traction, pre-scale acquisitions with differentiated predictive health models",
-                    "recommended": True
-                },
-                {
-                    "id": 2,
-                    "type": "Digital Health Coaching Platforms",
-                    "valueRange": "5-30M",
-                    "growthRate": "15-35% CAGR",
-                    "description": "Personalized coaching platforms, scalable content/AI, established coaching methodologies",
-                    "recommended": True
-                }
-            ],
-            "transformationStories": [
-                {
-                    "id": 1,
-                    "title": "AI Supercharger: Clinical-Grade Health Intelligence",
-                    "growthPotential": "+20-70%",
-                    "currentState": "Preventive health platform with strong engagement",
-                    "acquire": "A $20–60M revenue AI health analytics startup",
-                    "futureState": "GOQii integrates proprietary AI risk prediction into its wearables",
-                    "integrationTime": "6–18 months"
-                }
-            ]
-        }
-    }
+        # Automatically start credit analysis
+        result = await credit_analysis_service.process_credit_document(
+            document_id=document_id,
+            user_id=current_user["id"]
+        )
 
-@app.get("/api/market-maps/companies")
-async def get_target_companies(category: str = None):
-    """Get list of potential M&A target companies"""
-    companies = [
-        {"name": "Remo+", "category": "Digital Health Coaching Platforms"},
-        {"name": "Blaze", "category": "Digital Health Coaching Platforms"},
-        {"name": "Vera", "category": "Wearable Medical Devices"},
-        {"name": "Audicus", "category": "Wearable Medical Devices"},
-        {"name": "Speck", "category": "Smartwatches with Health Tracking"},
-        {"name": "Iamme", "category": "Digital Health Coaching Platforms"},
-        {"name": "BODI", "category": "Digital Health Coaching Platforms"},
-        {"name": "Kurbao", "category": "Smartwatches with Health Tracking"},
-        {"name": "Withings", "category": "Wearable Medical Devices"},
-        {"name": "Fitbit", "category": "Wearable Medical Devices"},
-        {"name": "Garmin", "category": "Smartwatches with Health Tracking"},
-        {"name": "Apple", "category": "Smartwatches with Health Tracking"},
-        {"name": "Samsung", "category": "Smartwatches with Health Tracking"}
-    ]
-
-    if category:
-        companies = [c for c in companies if c["category"] == category]
-
-    return {
-        "success": True,
-        "total": len(companies),
-        "estimated_total": 2000,
-        "data": companies
-    }
-
-@app.get("/api/market-maps/analyses")
-async def get_market_analyses():
-    """Get market analysis documents"""
-    return {
-        "success": True,
-        "data": [
-            {
-                "id": 1,
-                "name": "New Document",
-                "category": "Market",
-                "lastUpdated": None,
-                "createdAt": "2025-10-17T16:00:00Z"
+        if not result.get('success'):
+            return {
+                "success": False,
+                "document_id": document_id,
+                "error": result.get('error'),
+                "message": "Document uploaded but extraction failed to start"
             }
-        ]
-    }
 
-@app.post("/api/market-maps/analyst-qa")
-async def submit_analyst_question(question: dict):
-    """Submit a question to the AI analyst"""
-    return {
-        "success": True,
-        "answer": "This is a sample AI analyst response. In production, this would be powered by an AI model analyzing market intelligence data.",
-        "sources": [
-            "Market intelligence database",
-            "Industry reports",
-            "Company filings"
-        ]
-    }
+        return {
+            "success": True,
+            "document_id": document_id,
+            "extraction_id": result.get('extraction_id'),
+            "workflow_id": result.get('workflow_id'),
+            "status": result.get('status'),
+            "message": "Credit agreement uploaded and extraction started",
+            "document": {
+                "id": document_id,
+                "name": file.filename,
+                "size": len(file_content)
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error uploading credit document: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload credit document: {str(e)}"
+        )
+
+@app.post("/api/credit-analysis/query")
+async def query_credit_analysis(
+    query: str = Form(...),
+    company_name: Optional[str] = Form(None),
+    document_id: Optional[str] = Form(None),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Process a natural language query about credit analysis
+    Can query specific document or provide general guidance
+    """
+    try:
+        result = await credit_analysis_service.query_credit_analysis(
+            query=query,
+            user_id=current_user["id"],
+            company_name=company_name,
+            document_id=document_id
+        )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error processing credit query: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process credit query: {str(e)}"
+        )
+
+@app.get("/api/credit-analysis/document/{document_id}/results")
+async def get_credit_analysis_results(
+    document_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Get credit analysis results for a document
+    Returns extracted credit fields, ratings, and analysis
+    """
+    try:
+        result = await credit_analysis_service.get_credit_analysis_results(
+            document_id=document_id,
+            user_id=current_user["id"]
+        )
+
+        if not result.get('success'):
+            # Handle different error states
+            if result.get('status') == 'processing':
+                return JSONResponse(
+                    status_code=status.HTTP_202_ACCEPTED,
+                    content=result
+                )
+            elif result.get('status') == 'not_started':
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=result.get('error')
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=result.get('error', 'Unknown error')
+                )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error getting credit analysis results: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get credit analysis results: {str(e)}"
+        )
 
 # Error handlers
 @app.exception_handler(Exception)

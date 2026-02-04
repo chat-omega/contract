@@ -12,6 +12,11 @@ class CreditAnalysisChat {
         this.fileUpload = null;
         this.initialized = false;
         this.STORAGE_KEY = 'credit_analysis_chat_history';
+        this.API_BASE_URL = window.location.origin.includes('localhost')
+            ? 'http://localhost:5001'
+            : window.location.origin;
+        this.currentDocumentId = null;
+        this.pollingInterval = null;
     }
 
     /**
@@ -122,8 +127,15 @@ class CreditAnalysisChat {
 
         console.log('📤 Sending message:', message);
 
-        // Instead of adding to chat, show credit report
-        this.showCreditReport(message);
+        // Add user message to chat
+        this.addMessage({
+            role: 'user',
+            content: message,
+            timestamp: new Date().toISOString()
+        });
+
+        // Send to credit analysis API
+        this.sendCreditAnalysisQuery(message);
 
         // Clear input
         this.chatInput.value = '';
@@ -152,10 +164,8 @@ class CreditAnalysisChat {
             fileType: file.type
         });
 
-        // Generate mock analysis response
-        setTimeout(() => {
-            this.generateFileAnalysisResponse(file);
-        }, 1500 + Math.random() * 1000);
+        // Upload to API
+        this.uploadCreditDocument(file);
 
         // Clear file input
         event.target.value = '';
@@ -306,38 +316,268 @@ class CreditAnalysisChat {
     }
 
     /**
-     * Generate a mock response from the assistant
+     * Send query to Credit Analysis API
      */
-    generateMockResponse(userMessage) {
-        const responses = [
-            `I understand you're inquiring about "${userMessage}". In credit analysis, this typically involves assessing various financial metrics including liquidity ratios, debt-to-equity ratios, and cash flow patterns.\n\nKey considerations:\n- Historical financial performance\n- Industry benchmarks\n- Market conditions\n- Management quality\n\nWould you like me to provide a detailed analysis?`,
+    async sendCreditAnalysisQuery(userMessage) {
+        try {
+            // Show loading message
+            const loadingMessage = {
+                role: 'assistant',
+                content: '⏳ Processing your request...',
+                timestamp: new Date().toISOString(),
+                isLoading: true
+            };
+            this.addMessage(loadingMessage);
 
-            `Thank you for your question about "${userMessage}". Based on our risk engine analysis:\n\n**Credit Assessment Factors:**\n- Payment history and track record\n- Current debt obligations\n- Revenue stability\n- Industry sector risk\n\nI can provide more specific insights if you share additional details or upload relevant financial documents.`,
+            // Get auth token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please log in to use credit analysis');
+            }
 
-            `Analyzing your query regarding "${userMessage}"...\n\n**Key Findings:**\n- Credit risk assessment requires comprehensive data\n- Multiple financial indicators should be considered\n- Industry context is crucial\n\nPlease upload financial statements or provide more details for a thorough analysis.`,
-        ];
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('query', userMessage);
+            if (this.currentDocumentId) {
+                formData.append('document_id', this.currentDocumentId);
+            }
 
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            // Call API
+            const response = await fetch(`${this.API_BASE_URL}/api/credit-analysis/query`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
 
-        this.addMessage({
-            role: 'assistant',
-            content: randomResponse,
-            timestamp: new Date().toISOString()
-        });
+            // Remove loading message
+            this.messages = this.messages.filter(msg => !msg.isLoading);
+            this.renderMessages();
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Query failed');
+            }
+
+            const data = await response.json();
+
+            // Handle response based on status
+            if (data.success && data.status === 'complete') {
+                // We have complete results - show credit report
+                await this.displayCreditReport(data);
+            } else {
+                // Show informational response
+                let responseText = data.message || 'To perform credit analysis, please upload a credit agreement document.';
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseText += '\n\n**Next Steps:**\n';
+                    data.suggestions.forEach(suggestion => {
+                        responseText += `- ${suggestion}\n`;
+                    });
+                }
+
+                this.addMessage({
+                    role: 'assistant',
+                    content: responseText,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            console.error('Credit analysis query error:', error);
+
+            // Remove loading message
+            this.messages = this.messages.filter(msg => !msg.isLoading);
+            this.renderMessages();
+
+            this.addMessage({
+                role: 'assistant',
+                content: `❌ Error: ${error.message}\n\nPlease try again or contact support if the issue persists.`,
+                timestamp: new Date().toISOString()
+            });
+        }
     }
 
     /**
-     * Generate a mock file analysis response
+     * Upload credit document to API
      */
-    generateFileAnalysisResponse(file) {
-        const fileName = file.name;
-        const response = `I've received your document "${fileName}". Here's a preliminary analysis:\n\n**Document Review:**\n- Document type detected: ${this.guessDocumentType(fileName)}\n- File size: ${(file.size / 1024).toFixed(2)} KB\n\n**Next Steps:**\nI'm analyzing the document content to extract key financial metrics and credit indicators. In a production environment, this would include:\n- Automated data extraction\n- Financial ratio calculations\n- Risk scoring\n- Comparative analysis\n\nWould you like me to focus on any specific aspects of the credit analysis?`;
+    async uploadCreditDocument(file) {
+        try {
+            // Show loading message
+            const loadingMessage = {
+                role: 'assistant',
+                content: `⏳ Uploading "${file.name}" and starting credit analysis extraction...`,
+                timestamp: new Date().toISOString(),
+                isLoading: true
+            };
+            this.addMessage(loadingMessage);
 
-        this.addMessage({
-            role: 'assistant',
-            content: response,
-            timestamp: new Date().toISOString()
-        });
+            // Get auth token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please log in to upload documents');
+            }
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Call upload API
+            const response = await fetch(`${this.API_BASE_URL}/api/credit-analysis/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            // Remove loading message
+            this.messages = this.messages.filter(msg => !msg.isLoading);
+            this.renderMessages();
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Upload failed');
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Upload failed');
+            }
+
+            // Store document ID for future queries
+            this.currentDocumentId = data.document_id;
+
+            // Show success message
+            const successMessage = `✅ Document uploaded successfully!\n\n**Extraction Started:**\n- Document: ${file.name}\n- Extraction ID: ${data.extraction_id}\n- Status: ${data.status}\n\n⏳ Analyzing credit agreement... This may take 30-60 seconds.`;
+
+            this.addMessage({
+                role: 'assistant',
+                content: successMessage,
+                timestamp: new Date().toISOString()
+            });
+
+            // Start polling for extraction results
+            this.startPollingForResults(data.document_id, data.extraction_id);
+
+        } catch (error) {
+            console.error('Credit document upload error:', error);
+
+            // Remove loading message
+            this.messages = this.messages.filter(msg => !msg.isLoading);
+            this.renderMessages();
+
+            this.addMessage({
+                role: 'assistant',
+                content: `❌ Upload Error: ${error.message}\n\nPlease ensure the file is a valid PDF and try again.`,
+                timestamp: new Date().toISOString()
+            });
+        }
+    }
+
+    /**
+     * Start polling for extraction results
+     */
+    async startPollingForResults(documentId, extractionId) {
+        // Clear any existing poll interval
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+
+        let pollCount = 0;
+        const maxPolls = 60; // Max 5 minutes (60 * 5 seconds)
+
+        this.pollingInterval = setInterval(async () => {
+            pollCount++;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    `${this.API_BASE_URL}/api/credit-analysis/document/${documentId}/results`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (response.ok || response.status === 202) {
+                    const data = await response.json();
+
+                    if (data.status === 'complete') {
+                        // Stop polling
+                        clearInterval(this.pollingInterval);
+                        this.pollingInterval = null;
+
+                        // Show success message
+                        this.addMessage({
+                            role: 'assistant',
+                            content: `✅ Credit analysis complete! Displaying results...`,
+                            timestamp: new Date().toISOString()
+                        });
+
+                        // Display credit report
+                        await this.displayCreditReport(data);
+
+                    } else if (data.status === 'failed') {
+                        // Stop polling
+                        clearInterval(this.pollingInterval);
+                        this.pollingInterval = null;
+
+                        this.addMessage({
+                            role: 'assistant',
+                            content: `❌ Extraction failed: ${data.error || 'Unknown error'}\n\nPlease try uploading the document again.`,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    // Continue polling if status is 'processing'
+
+                } else if (response.status === 404) {
+                    // Stop polling - document not found
+                    clearInterval(this.pollingInterval);
+                    this.pollingInterval = null;
+
+                    this.addMessage({
+                        role: 'assistant',
+                        content: `❌ Document not found. Please try uploading again.`,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+            } catch (error) {
+                console.error('Polling error:', error);
+            }
+
+            // Stop after max polls
+            if (pollCount >= maxPolls) {
+                clearInterval(this.pollingInterval);
+                this.pollingInterval = null;
+
+                this.addMessage({
+                    role: 'assistant',
+                    content: `⏱️ Extraction is taking longer than expected. Please check back later or contact support.`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        }, 5000); // Poll every 5 seconds
+    }
+
+    /**
+     * Display credit report with real data
+     */
+    async displayCreditReport(data) {
+        // Populate credit report with real data
+        this.populateCreditReport(data);
+
+        // Show credit report view
+        document.getElementById('chat-view').style.display = 'none';
+        document.getElementById('credit-report-view').style.display = 'flex';
+
+        // Render charts with real data
+        this.renderCharts(data.pod, data.spread);
     }
 
     /**
@@ -393,23 +633,6 @@ class CreditAnalysisChat {
     /**
      * Show credit report view
      */
-    showCreditReport(question) {
-        console.log('📊 Showing credit report for:', question);
-
-        // Hide chat container
-        document.querySelector('.chat-container').style.display = 'none';
-        document.querySelector('.credit-analysis-header').style.display = 'none';
-
-        // Show report view
-        const reportView = document.getElementById('credit-report-view');
-        reportView.style.display = 'block';
-
-        // Populate report with data
-        this.populateCreditReport(question);
-
-        // Render charts
-        setTimeout(() => this.renderCharts(), 100);
-    }
 
     /**
      * Hide credit report and return to chat
@@ -421,57 +644,44 @@ class CreditAnalysisChat {
     }
 
     /**
-     * Populate credit report with data
+     * Populate credit report with data from API
      */
-    populateCreditReport(question) {
-        // Dummy data for First Brands
-        const reportData = {
-            company: 'First Brands Group, LLC',
-            rating: 'D',
-            sector: 'Automotive',
-            coverage: 'High coverage quality',
-            outlook: 'Stable',
-            outlookDesc: 'Risk is medium and rating is expected to remain stable',
-            pod: {
-                value: '1.65%',
-                horizon: '1-year',
-                change: '+0.05%',
-                data: [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.3, 1.6, 1.65]
-            },
-            spread: {
-                value: '9.31%',
-                term: '5 year loan',
-                change: '+0.15%',
-                data: [3, 4, 5, 5.5, 6, 6.5, 7, 7.5, 8.5, 9.0, 9.31]
-            }
-        };
+    populateCreditReport(data) {
+        // Extract data from API response
+        const company = data.company || {};
+        const outlook = data.outlook || {};
+        const pod = data.pod || {};
+        const spread = data.spread || {};
+        const analysis = data.analysis || {};
 
         // Populate company info card
         const companyCard = document.getElementById('company-info-card');
+        const ratingClass = company.rating ? `rating-${company.rating.toLowerCase().replace('+', 'plus').replace('-', 'minus')}` : '';
+
         companyCard.innerHTML = `
-            <h2>${reportData.company}</h2>
-            <div class="rating-badge ${reportData.rating === 'D' ? 'rating-d' : ''}">Rating ${reportData.rating}</div>
-            <p class="sector">${reportData.sector}</p>
-            <p class="coverage">${reportData.coverage}</p>
+            <h2>${company.name || 'Unknown Company'}</h2>
+            <div class="rating-badge ${ratingClass}">Rating ${company.rating || 'N/A'}</div>
+            <p class="sector">${company.sector || 'Sector not specified'}</p>
+            <p class="coverage">${company.coverage || 'Based on credit agreement analysis'}</p>
             <div class="outlook-section">
-                <h4>Outlook <span class="outlook-badge">${reportData.outlook}</span></h4>
-                <p>${reportData.outlookDesc}</p>
+                <h4>Outlook <span class="outlook-badge">${outlook.outlook || 'Stable'}</span></h4>
+                <p>${outlook.description || 'No outlook description available'}</p>
             </div>
         `;
 
         // Populate stats
         document.getElementById('pod-stat').innerHTML = `
-            <strong>${reportData.pod.value}</strong> over a ${reportData.pod.horizon} horizon<br>
-            <span class="change">Increased by ${reportData.pod.change} last mo.</span>
+            <strong>${pod.value || 'N/A'}</strong> over a ${pod.horizon || '1-year'} horizon<br>
+            <span class="change">${pod.change || 'No change data'}</span>
         `;
 
         document.getElementById('spread-stat').innerHTML = `
-            <strong>${reportData.spread.value}</strong> for ${reportData.spread.term}<br>
-            <span class="change">Increased by ${reportData.spread.change} last mo.</span>
+            <strong>${spread.value || 'N/A'}</strong> for ${spread.term || '5 year loan'}<br>
+            <span class="change">${spread.change || 'No change data'}</span>
         `;
 
         // Populate analysis text
-        const analysisText = this.getAnalysisText();
+        const analysisText = analysis.html || '<p>No analysis available</p>';
         document.getElementById('credit-report-content').innerHTML = `
             <div class="report-content">
                 ${analysisText}
@@ -479,89 +689,11 @@ class CreditAnalysisChat {
         `;
     }
 
-    /**
-     * Get formatted analysis text
-     */
-    getAnalysisText() {
-        const rawText = `
-            <h2>Credit Analysis: First Brands Group, LLC</h2>
-
-            <p>Based on my comprehensive analysis using OmegaIntelligence.ai's proprietary credit assessment system, here's the current credit profile for First Brands Group, LLC:</p>
-
-            <h3>Current Credit Assessment</h3>
-            <ul>
-                <li><strong>Current Letter Rating:</strong> D (as of October 2025)</li>
-                <li><strong>Probability of Default (1-year):</strong> 1.65% (October 2025)</li>
-                <li><strong>Z-Spread (5-year):</strong> 931 basis points (9.31%)</li>
-            </ul>
-
-            <h3>Recent Credit Profile Changes</h3>
-            <p>The company has experienced severe credit deterioration over the past year, with OmegaIntelligence.ai's proprietary rating system capturing this decline:</p>
-            <ul>
-                <li><strong>March 2025:</strong> C2 rating with 1,017 bps z-spread</li>
-                <li><strong>September 2025:</strong> Downgraded to D rating with 916 bps z-spread</li>
-                <li><strong>October 2025:</strong> Maintained D rating with 931 bps z-spread</li>
-            </ul>
-            <p>This represents a dramatic deterioration from the B4 ratings (around 700 bps z-spread) maintained through most of 2024.</p>
-
-            <h3>Market Context and Peer Comparison</h3>
-            <p>First Brands Group significantly underperforms its automotive aftermarket peers:</p>
-            <p><strong>Industry Peer Z-Spreads (Current):</strong></p>
-            <ul>
-                <li>Federal Mogul: 288 bps</li>
-                <li>Standard Motor Products: 366 bps</li>
-                <li>Brake Parts Inc: 596 bps</li>
-                <li>BBB Industries: 1,023 bps</li>
-                <li>First Brands Group: 931 bps</li>
-            </ul>
-            <p>The company's current z-spread of 931 bps places it in the bottom 10% of automotive companies in OmegaIntelligence.ai's universe, indicating severe distress.</p>
-
-            <h3>Key Risk Factors from OmegaIntelligence.ai Analysis</h3>
-            <p><strong>Macroeconomic Exposures:</strong></p>
-            <ul>
-                <li><strong>Interest Rate Sensitivity:</strong> +37.6% (highly vulnerable to rate increases)</li>
-                <li><strong>Equity Market Exposure:</strong> -38.5% (benefits from market declines)</li>
-                <li><strong>Technology Exposure:</strong> -10.2% (negative correlation)</li>
-                <li><strong>Oil Price Sensitivity:</strong> +1.7% (minimal exposure)</li>
-            </ul>
-
-            <h3>Current Market Developments</h3>
-            <p>The credit deterioration captured by OmegaIntelligence.ai's system has been validated by recent market events. First Brands Group filed for Chapter 11 bankruptcy in September 2025 after carrying approximately $9-10 billion in total debt against $5 billion in annual revenue.</p>
-            <p>Traditional rating agencies followed similar trajectories:</p>
-            <ul>
-                <li><strong>Fitch:</strong> Downgraded from B+ to CCC before withdrawing ratings</li>
-                <li><strong>S&P:</strong> Downgraded from B+ to D following bankruptcy filing</li>
-            </ul>
-
-            <h3>OmegaIntelligence.ai's Unique Insights</h3>
-            <p>OmegaIntelligence.ai's comprehensive market data integration identified several warning signals that traditional agencies may have missed:</p>
-            <ul>
-                <li><strong>Early Detection:</strong> The system flagged deterioration to C-level ratings in March 2025, months before the September bankruptcy</li>
-                <li><strong>Comprehensive Risk Assessment:</strong> Integration of off-balance-sheet exposures and supply chain financing risks</li>
-                <li><strong>Peer-Relative Analysis:</strong> Clear identification of the company's position in the bottom decile of automotive credit quality</li>
-                <li><strong>Macroeconomic Vulnerability:</strong> High interest rate sensitivity (37.6%) correctly predicted vulnerability to the current rate environment</li>
-            </ul>
-            <p>The D rating and 931 bps z-spread reflect the company's current distressed status, with the bankruptcy filing validating OmegaIntelligence.ai's early warning signals about deteriorating creditworthiness in this highly leveraged automotive aftermarket consolidation story.</p>
-
-            <h3>Follow-up Analysis Options</h3>
-            <ol>
-                <li><strong>Recovery Analysis</strong> - What are the potential recovery rates for different debt tranches in the Chapter 11 proceedings, and how do similar automotive bankruptcies typically resolve?</li>
-                <li><strong>Sector Contagion Risk</strong> - Which other highly leveraged automotive aftermarket companies might face similar distress, and what early warning indicators should we monitor?</li>
-                <li><strong>Portfolio Impact Assessment</strong> - For investors holding similar automotive credits, what hedging strategies or portfolio adjustments would be most effective given the sector's current stress?</li>
-            </ol>
-
-            <p><em>This case demonstrates the value of advanced credit analytics in providing timely risk assessment and highlights the importance of continuous monitoring in today's volatile credit environment.</em></p>
-
-            <p><em>Analysis powered by OmegaIntelligence.ai - For more information, visit <a href="https://omegaintelligence.ai" target="_blank">https://omegaintelligence.ai</a></em></p>
-        `;
-
-        return rawText;
-    }
 
     /**
-     * Render charts using Chart.js
+     * Render charts using Chart.js with real data
      */
-    renderCharts() {
+    renderCharts(podData, spreadData) {
         if (typeof Chart === 'undefined') {
             console.error('Chart.js not loaded');
             return;
@@ -575,79 +707,90 @@ class CreditAnalysisChat {
             window.spreadChartInstance.destroy();
         }
 
+        // Extract time series data from API response
+        const podTimeSeries = podData?.timeSeries || {};
+        const spreadTimeSeries = spreadData?.timeSeries || {};
+
+        const podLabels = podTimeSeries.labels || [];
+        const podValues = podTimeSeries.values || [];
+        const spreadLabels = spreadTimeSeries.labels || [];
+        const spreadValues = spreadTimeSeries.values || [];
+
         // Probability of Default Chart
-        const podCtx = document.getElementById('pod-chart').getContext('2d');
-        window.podChartInstance = new Chart(podCtx, {
-            type: 'line',
-            data: {
-                labels: ['11/2021', '04/2022', '09/2022', '02/2023', '07/2023', '12/2023', '05/2024', '10/2024', '03/2025', '08/2025'],
-                datasets: [{
-                    label: 'Probability of default %',
-                    data: [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.3, 1.6, 1.65],
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        const podCtx = document.getElementById('pod-chart')?.getContext('2d');
+        if (podCtx) {
+            window.podChartInstance = new Chart(podCtx, {
+                type: 'line',
+                data: {
+                    labels: podLabels,
+                    datasets: [{
+                        label: 'Probability of default %',
+                        data: podValues,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 2.0,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // Credit Spread Chart
-        const spreadCtx = document.getElementById('spread-chart').getContext('2d');
-        window.spreadChartInstance = new Chart(spreadCtx, {
-            type: 'line',
-            data: {
-                labels: ['11/2021', '04/2022', '09/2022', '02/2023', '07/2023', '12/2023', '05/2024', '10/2024', '03/2025', '08/2025'],
-                datasets: [{
-                    label: 'Credit Spread',
-                    data: [3, 4, 5, 5.5, 6, 6.5, 7, 7.5, 8.5, 9.0, 9.31],
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        const spreadCtx = document.getElementById('spread-chart')?.getContext('2d');
+        if (spreadCtx) {
+            window.spreadChartInstance = new Chart(spreadCtx, {
+                type: 'line',
+                data: {
+                    labels: spreadLabels,
+                    datasets: [{
+                        label: 'Credit Spread',
+                        data: spreadValues,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
                 },
-                scales: {
-                    y: {
-                        min: 0,
-                        max: 15,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**

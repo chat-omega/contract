@@ -1024,54 +1024,87 @@ class AsyncDatabase:
 
     # Document type management methods
     async def get_document_types_hierarchical(self) -> List[Dict[str, Any]]:
-        """Get all document types organized by category"""
+        """Get all document types organized in 3-level hierarchy (Contract/Non-Contract → Categories → Types)"""
         try:
             async with aiosqlite.connect(self.db_path) as db:
                 db.row_factory = aiosqlite.Row
 
-                # Get all categories with their types
+                # Get all data in one query with 3-level hierarchy
                 cursor = await db.execute("""
                     SELECT
-                        c.id as category_id,
-                        c.name as category_name,
-                        c.display_order as category_order,
+                        tc.id as top_category_id,
+                        tc.name as top_category_name,
+                        tc.display_order as top_category_order,
+                        tc.level as top_category_level,
+                        sc.id as sub_category_id,
+                        sc.name as sub_category_name,
+                        sc.display_order as sub_category_order,
+                        sc.level as sub_category_level,
                         dt.id as type_id,
                         dt.name as type_name,
                         dt.display_order as type_order
-                    FROM document_categories c
-                    LEFT JOIN document_types dt ON c.id = dt.category_id
-                    ORDER BY c.display_order, dt.display_order
+                    FROM document_categories tc
+                    LEFT JOIN document_categories sc ON tc.id = sc.parent_category_id AND sc.level = 2
+                    LEFT JOIN document_types dt ON sc.id = dt.category_id
+                    WHERE tc.level = 1
+                    ORDER BY tc.display_order, sc.display_order, dt.display_order
                 """)
 
                 rows = await cursor.fetchall()
 
-                # Organize data into hierarchical structure
-                categories = {}
-                for row in rows:
-                    category_id = row['category_id']
+                # Organize data into 3-level hierarchical structure
+                top_categories = {}
 
-                    if category_id not in categories:
-                        categories[category_id] = {
-                            'id': category_id,
-                            'name': row['category_name'],
-                            'display_order': row['category_order'],
+                for row in rows:
+                    top_id = row['top_category_id']
+
+                    # Create top-level category if not exists
+                    if top_id not in top_categories:
+                        top_categories[top_id] = {
+                            'id': top_id,
+                            'name': row['top_category_name'],
+                            'display_order': row['top_category_order'],
+                            'level': row['top_category_level'],
+                            'children': {},
                             'types': []
                         }
 
-                    # Add type if it exists
-                    if row['type_id']:
-                        categories[category_id]['types'].append({
+                    # Add sub-category if exists
+                    sub_id = row['sub_category_id']
+                    if sub_id and sub_id not in top_categories[top_id]['children']:
+                        top_categories[top_id]['children'][sub_id] = {
+                            'id': sub_id,
+                            'name': row['sub_category_name'],
+                            'display_order': row['sub_category_order'],
+                            'level': row['sub_category_level'],
+                            'parent_id': top_id,
+                            'types': []
+                        }
+
+                    # Add type to sub-category if exists
+                    if row['type_id'] and sub_id:
+                        top_categories[top_id]['children'][sub_id]['types'].append({
                             'id': row['type_id'],
                             'name': row['type_name'],
                             'display_order': row['type_order']
                         })
 
-                # Convert to list sorted by display order
-                result = sorted(categories.values(), key=lambda x: x['display_order'])
+                # Convert nested dictionaries to lists and sort
+                result = []
+                for top_cat in sorted(top_categories.values(), key=lambda x: x['display_order']):
+                    # Convert children dict to sorted list
+                    top_cat['children'] = sorted(
+                        top_cat['children'].values(),
+                        key=lambda x: x['display_order']
+                    )
+                    result.append(top_cat)
+
                 return result
 
         except Exception as e:
             print(f"❌ Error getting hierarchical document types: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     async def get_document_categories(self) -> List[Dict[str, Any]]:

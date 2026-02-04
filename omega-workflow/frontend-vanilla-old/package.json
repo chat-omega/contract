@@ -1,7 +1,7 @@
 {
   "name": "document-management-app",
   "version": "1.0.0",
-  "description": "Document Management System with collapsible sidebar",
+  "description": "Credit Research Analyst with collapsible sidebar",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -25,7 +25,7 @@
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.56.1",
+    "nodemon": "^3.0.1"
   }
 }

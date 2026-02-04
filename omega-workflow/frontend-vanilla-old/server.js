@@ -103,10 +103,21 @@ app.use('/api', createProxyMiddleware({
     }
 }));
 
+// Health check endpoint for Docker healthcheck
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', service: 'vanilla-frontend' });
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname)));
 
-// Route all requests to index.html
+// Handle /documents/:id URLs - serve document viewer (for hybrid architecture)
+// This must come BEFORE the catch-all route
+app.get('/documents/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'document-detail.html'));
+});
+
+// Route all other requests to index.html (dashboard)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -115,7 +126,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ========================================
-Document Management App is running!
+Credit Research Analyst App is running!
 ========================================
 The application is available at:
 

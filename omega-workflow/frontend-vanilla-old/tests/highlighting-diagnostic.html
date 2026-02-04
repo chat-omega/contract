@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Highlighting Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .pdf-viewer-mock {
+            position: relative;
+            width: 612px; /* Standard PDF page width at 72 DPI */
+            height: 792px; /* Standard PDF page height at 72 DPI (letter size) */
+            border: 2px solid #333;
+            background: white;
+            margin: 20px 0;
+        }
+        .reference-text {
+            position: absolute;
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            color: #000;
+        }
+        .expected-highlight {
+            position: absolute;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid rgba(0, 200, 0, 0.6);
+            pointer-events: none;
+        }
+        .actual-highlight {
+            position: absolute;
+            background: rgba(255, 255, 0, 0.3);
+            border: 2px solid rgba(255, 235, 0, 0.6);
+            pointer-events: none;
+        }
+        .wrong-highlight {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid rgba(255, 0, 0, 0.6);
+            pointer-events: none;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5558e3;
+        }
+        .log-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+        .log-error { color: #f48771; }
+        .log-success { color: #89d185; }
+        .log-warn { color: #dcdcaa; }
+        .log-info { color: #569cd6; }
+        .coordinate-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .coordinate-table th,
+        .coordinate-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .coordinate-table th {
+            background: #6366f1;
+            color: white;
+        }
+        .coordinate-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border: 2px solid;
+        }
+        .axis-labels {
+            position: absolute;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 PDF Highlighting Diagnostic Tool</h1>
+        <p class="subtitle">Visual testing for PDF coordinate system and highlighting accuracy</p>
+
+        <div class="test-section">
+            <h2>Test Scenario: Coordinate System Verification</h2>
+            <p>This test uses a mock PDF page (612x792 pixels, standard letter size) to verify bbox coordinate transformations.</p>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box expected-highlight"></div>
+                    <span>Expected Highlight (Green) - Where highlight should appear</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box actual-highlight"></div>
+                    <span>Actual Highlight (Yellow) - Current implementation</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box wrong-highlight"></div>
+                    <span>Wrong Highlight (Red) - Incorrect coordinate system</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button onclick="testTopLeftOrigin()">Test TOP-LEFT Origin (Current)</button>
+                <button onclick="testBottomLeftOrigin()">Test BOTTOM-LEFT Origin (PDF Standard)</button>
+                <button onclick="testBothOrigins()">Test Both (Compare)</button>
+                <button onclick="clearHighlights()">Clear All</button>
+            </div>
+
+            <div class="pdf-viewer-mock" id="pdfMock">
+                <!-- Axis labels for reference -->
+                <span class="axis-labels" style="top: -20px; left: 0;">X=0</span>
+                <span class="axis-labels" style="top: -20px; right: 0;">X=612</span>
+                <span class="axis-labels" style="top: 0; left: -35px;">Y=0</span>
+                <span class="axis-labels" style="bottom: 0; left: -35px;">Y=792</span>
+
+                <!-- Reference text at known positions -->
+                <div class="reference-text" style="left: 72px; top: 72px;">
+                    AGREEMENT made as of January 1, 2024
+                </div>
+                <div class="reference-text" style="left: 72px; top: 150px;">
+                    Between: Acme Corporation ("Party A")
+                </div>
+                <div class="reference-text" style="left: 72px; top: 200px;">
+                    And: Widget Industries LLC ("Party B")
+                </div>
+                <div class="reference-text" style="left: 72px; top: 300px;">
+                    Total Contract Value: $1,500,000.00
+                </div>
+                <div class="reference-text" style="left: 72px; bottom: 72px;">
+                    Signed on December 15, 2023
+                </div>
+            </div>
+
+            <h3>Test Cases with Known Coordinates</h3>
+            <table class="coordinate-table">
+                <thead>
+                    <tr>
+                        <th>Text</th>
+                        <th>Zuva Bbox (PDF coords)</th>
+                        <th>Expected Position (pixels)</th>
+                        <th>Coordinate System</th>
+                        <th>Test Result</th>
+                    </tr>
+                </thead>
+                <tbody id="testResults">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Diagnostic Log</h2>
+            <div class="log-output" id="logOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        const testCases = [
+            {
+                text: "January 1, 2024",
+                // Text is at pixel position: left=180, top=72
+                // Assuming 72 DPI PDF coordinates:
+                bboxTopLeft: [180, 72, 280, 84],  // [left, top, right, bottom] - top-left origin
+                bboxBottomLeft: [180, 708, 280, 720],  // [left, bottom, right, top] - bottom-left origin (792 - 72 = 720)
+                expectedPixels: { left: 180, top: 72, width: 100, height: 12 }
+            },
+            {
+                text: "Acme Corporation",
+                bboxTopLeft: [110, 150, 220, 162],
+                bboxBottomLeft: [110, 630, 220, 642],  // 792 - 150 = 642
+                expectedPixels: { left: 110, top: 150, width: 110, height: 12 }
+            },
+            {
+                text: "$1,500,000.00",
+                bboxTopLeft: [198, 300, 298, 312],
+                bboxBottomLeft: [198, 480, 298, 492],  // 792 - 300 = 492
+                expectedPixels: { left: 198, top: 300, width: 100, height: 12 }
+            },
+            {
+                text: "December 15, 2023",
+                bboxTopLeft: [153, 720, 268, 732],  // Near bottom
+                bboxBottomLeft: [153, 60, 268, 72],  // 792 - 720 = 72
+                expectedPixels: { left: 153, top: 720, width: 115, height: 12 }
+            }
+        ];
+
+        const pdfWidth = 612;
+        const pdfHeight = 792;
+
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('logOutput');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function clearHighlights() {
+            const mock = document.getElementById('pdfMock');
+            const highlights = mock.querySelectorAll('.actual-highlight, .expected-highlight, .wrong-highlight');
+            highlights.forEach(h => h.remove());
+            log('Cleared all highlights', 'info');
+        }
+
+        function createHighlight(coords, className, label = '') {
+            const mock = document.getElementById('pdfMock');
+            const highlight = document.createElement('div');
+            highlight.className = className;
+            highlight.style.left = `${coords.left}px`;
+            highlight.style.top = `${coords.top}px`;
+            highlight.style.width = `${coords.width}px`;
+            highlight.style.height = `${coords.height}px`;
+
+            if (label) {
+                highlight.title = label;
+            }
+
+            mock.appendChild(highlight);
+            return highlight;
+        }
+
+        function transformBboxTopLeft(bbox) {
+            // Current implementation: assumes top-left origin
+            // No Y-axis flipping needed
+            const [left, top, right, bottom] = bbox;
+
+            // Validation (from current code)
+            if (bottom <= top) {
+                log(`❌ VALIDATION FAILED: bottom (${bottom}) <= top (${top}) in top-left origin`, 'error');
+            }
+
+            return {
+                left: left,
+                top: top,
+                width: right - left,
+                height: bottom - top
+            };
+        }
+
+        function transformBboxBottomLeft(bbox) {
+            // PDF standard: bottom-left origin
+            // Need to flip Y-axis: screenY = pageHeight - pdfY
+            const [left, bottom, right, top] = bbox;
+
+            // Validation (PDF standard)
+            if (top <= bottom) {
+                log(`❌ VALIDATION FAILED: top (${top}) <= bottom (${bottom}) in bottom-left origin`, 'error');
+            }
+
+            // Y-axis flip: convert from bottom-left to top-left
+            const screenTop = pdfHeight - top;  // top edge in screen coordinates
+            const screenBottom = pdfHeight - bottom;  // bottom edge in screen coordinates
+
+            return {
+                left: left,
+                top: screenTop,
+                width: right - left,
+                height: top - bottom  // height is positive (top > bottom in PDF coords)
+            };
+        }
+
+        function testTopLeftOrigin() {
+            clearHighlights();
+            log('🧪 Testing TOP-LEFT origin (Current Implementation)', 'info');
+            log('='.repeat(50), 'info');
+
+            const results = [];
+
+            testCases.forEach((testCase, index) => {
+                log(`\nTest ${index + 1}: "${testCase.text}"`, 'info');
+                log(`  Bbox (top-left): [${testCase.bboxTopLeft.join(', ')}]`, 'info');
+
+                const transformed = transformBboxTopLeft(testCase.bboxTopLeft);
+                log(`  Transformed: left=${transformed.left}, top=${transformed.top}, w=${transformed.width}, h=${transformed.height}`, 'info');
+                log(`  Expected: left=${testCase.expectedPixels.left}, top=${testCase.expectedPixels.top}, w=${testCase.expectedPixels.width}, h=${testCase.expectedPixels.height}`, 'info');
+
+                // Check if matches expected
+                const matches = (
+                    transformed.left === testCase.expectedPixels.left &&
+                    transformed.top === testCase.expectedPixels.top &&
+                    transformed.width === testCase.expectedPixels.width &&
+                    transformed.height === testCase.expectedPixels.height
+                );
+
+                if (matches) {
+                    log(`  ✅ CORRECT: Highlight matches expected position`, 'success');
+                    createHighlight(transformed, 'actual-highlight', `${testCase.text} (CORRECT)`);
+                } else {
+                    log(`  ❌ WRONG: Highlight does NOT match expected position`, 'error');
+                    createHighlight(testCase.expectedPixels, 'expected-highlight', `Expected: ${testCase.text}`);
+                    createHighlight(transformed, 'wrong-highlight', `Actual (WRONG): ${testCase.text}`);
+                }
+
+                results.push({ testCase, transformed, matches, origin: 'top-left' });
+            });
+
+            updateResultsTable(results);
+
+            const passRate = (results.filter(r => r.matches).length / results.length * 100).toFixed(0);
+            log(`\n📊 TOP-LEFT Origin Test Complete: ${passRate}% pass rate`, passRate === '100' ? 'success' : 'error');
+        }
+
+        function testBottomLeftOrigin() {
+            clearHighlights();
+            log('🧪 Testing BOTTOM-LEFT origin (PDF Standard)', 'info');
+            log('='.repeat(50), 'info');
+
+            const results = [];
+
+            testCases.forEach((testCase, index) => {
+                log(`\nTest ${index + 1}: "${testCase.text}"`, 'info');
+                log(`  Bbox (bottom-left): [${testCase.bboxBottomLeft.join(', ')}]`, 'info');
+
+                const transformed = transformBboxBottomLeft(testCase.bboxBottomLeft);
+                log(`  Transformed: left=${transformed.left}, top=${transformed.top}, w=${transformed.width}, h=${transformed.height}`, 'info');
+                log(`  Expected: left=${testCase.expectedPixels.left}, top=${testCase.expectedPixels.top}, w=${testCase.expectedPixels.width}, h=${testCase.expectedPixels.height}`, 'info');
+
+                // Check if matches expected
+                const matches = (
+                    transformed.left === testCase.expectedPixels.left &&
+                    transformed.top === testCase.expectedPixels.top &&
+                    transformed.width === testCase.expectedPixels.width &&
+                    transformed.height === testCase.expectedPixels.height
+                );
+
+                if (matches) {
+                    log(`  ✅ CORRECT: Highlight matches expected position`, 'success');
+                    createHighlight(transformed, 'actual-highlight', `${testCase.text} (CORRECT)`);
+                } else {
+                    log(`  ❌ WRONG: Highlight does NOT match expected position`, 'error');
+                    createHighlight(testCase.expectedPixels, 'expected-highlight', `Expected: ${testCase.text}`);
+                    createHighlight(transformed, 'wrong-highlight', `Actual (WRONG): ${testCase.text}`);
+                }
+
+                results.push({ testCase, transformed, matches, origin: 'bottom-left' });
+            });
+
+            updateResultsTable(results);
+
+            const passRate = (results.filter(r => r.matches).length / results.length * 100).toFixed(0);
+            log(`\n📊 BOTTOM-LEFT Origin Test Complete: ${passRate}% pass rate`, passRate === '100' ? 'success' : 'error');
+        }
+
+        function testBothOrigins() {
+            clearHighlights();
+            log('🧪 Testing BOTH origins (Comparison)', 'info');
+            log('='.repeat(50), 'info');
+
+            log('\n--- Testing TOP-LEFT Origin ---', 'info');
+            testCases.forEach((testCase, index) => {
+                const transformed = transformBboxTopLeft(testCase.bboxTopLeft);
+                const matches = (
+                    transformed.left === testCase.expectedPixels.left &&
+                    transformed.top === testCase.expectedPixels.top
+                );
+                log(`Test ${index + 1} (top-left): ${matches ? '✅ PASS' : '❌ FAIL'}`, matches ? 'success' : 'error');
+            });
+
+            log('\n--- Testing BOTTOM-LEFT Origin ---', 'info');
+            testCases.forEach((testCase, index) => {
+                const transformed = transformBboxBottomLeft(testCase.bboxBottomLeft);
+                const matches = (
+                    transformed.left === testCase.expectedPixels.left &&
+                    transformed.top === testCase.expectedPixels.top
+                );
+                log(`Test ${index + 1} (bottom-left): ${matches ? '✅ PASS' : '❌ FAIL'}`, matches ? 'success' : 'error');
+            });
+
+            log('\n💡 Recommendation: Use the coordinate system that shows 100% pass rate', 'warn');
+        }
+
+        function updateResultsTable(results) {
+            const tbody = document.getElementById('testResults');
+            tbody.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${result.testCase.text}</td>
+                    <td>[${result.origin === 'top-left' ? result.testCase.bboxTopLeft.join(', ') : result.testCase.bboxBottomLeft.join(', ')}]</td>
+                    <td>left=${result.testCase.expectedPixels.left}, top=${result.testCase.expectedPixels.top}, w=${result.testCase.expectedPixels.width}, h=${result.testCase.expectedPixels.height}</td>
+                    <td>${result.origin === 'top-left' ? 'TOP-LEFT (Current)' : 'BOTTOM-LEFT (PDF Std)'}</td>
+                    <td style="color: ${result.matches ? 'green' : 'red'}; font-weight: bold;">${result.matches ? '✅ PASS' : '❌ FAIL'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialize
+        log('Diagnostic tool loaded. Click a test button to begin.', 'info');
+        log('Page dimensions: ' + pdfWidth + 'x' + pdfHeight + ' pixels', 'info');
+    </script>
+</body>
+</html>

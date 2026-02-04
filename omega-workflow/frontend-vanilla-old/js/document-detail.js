@@ -30,6 +30,7 @@ class DocumentDetailPage {
         this.pageTextContent = new Map();
         this.isScrolling = false;
         this.scrollTimeout = null;
+        this.currentHighlightedExtraction = null; // Track current highlight for zoom persistence
 
         this.init();
     }
@@ -37,9 +38,24 @@ class DocumentDetailPage {
     init() {
         console.log('🚀 Initializing DocumentDetailPage...');
 
-        // Get document ID from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const documentId = urlParams.get('id');
+        // Get document ID from URL - supports both path and query param styles
+        // Path style: /documents/e37f9df8 (for hybrid architecture with React)
+        // Query style: document-detail.html?id=e37f9df8 (legacy vanilla style)
+        let documentId = null;
+
+        // Try path first: /documents/:id
+        const pathMatch = window.location.pathname.match(/\/documents\/([a-f0-9-]+)/);
+        if (pathMatch) {
+            documentId = pathMatch[1];
+            console.log(`📄 Document ID from path: ${documentId}`);
+        } else {
+            // Fall back to query param: ?id=xxx
+            const urlParams = new URLSearchParams(window.location.search);
+            documentId = urlParams.get('id');
+            if (documentId) {
+                console.log(`📄 Document ID from query: ${documentId}`);
+            }
+        }
 
         if (!documentId) {
             console.error('❌ No document ID provided');
@@ -583,9 +599,9 @@ class DocumentDetailPage {
 
             const data = await response.json();
 
-            if (data.status === 'complete' && data.fields) {
-                console.log('Extraction results:', data.fields);
-                this.updateTermsWithExtractionResults(data.fields);
+            if (data.status === 'complete' && data.results) {
+                console.log('Extraction results:', data.results);
+                this.updateTermsWithExtractionResults(data.results);
             } else if (data.status === 'processing' || data.status === 'pending') {
                 console.log('Extraction still in progress');
                 this.showTermsMessage('Extraction in progress...');
@@ -603,6 +619,31 @@ class DocumentDetailPage {
     }
 
     updateTermsWithExtractionResults(fields) {
+        // DEBUG: Field ID matching diagnostics
+        const apiFieldIds = Object.keys(fields);
+        const renderedFieldElements = document.querySelectorAll('[data-field-id]');
+        const renderedFieldIds = Array.from(renderedFieldElements).map(el => el.dataset.fieldId);
+
+        console.log('🔍 Field ID Matching Diagnostics:');
+        console.log(`   📊 API returned ${apiFieldIds.length} fields:`, apiFieldIds);
+        console.log(`   📋 DOM has ${renderedFieldIds.length} rendered fields:`, renderedFieldIds);
+
+        // Check for mismatches
+        const apiNotInDom = apiFieldIds.filter(id => !renderedFieldIds.includes(id));
+        const domNotInApi = renderedFieldIds.filter(id => !apiFieldIds.includes(id));
+
+        if (apiNotInDom.length > 0) {
+            console.warn(`   ⚠️ ${apiNotInDom.length} API fields NOT found in DOM:`, apiNotInDom);
+            console.warn(`      These fields won't get extraction data or click handlers!`);
+        }
+        if (domNotInApi.length > 0) {
+            console.log(`   ℹ️ ${domNotInApi.length} DOM fields not in API response:`, domNotInApi);
+            console.log(`      These fields remain as "Not found" or "Extracting..."`);
+        }
+        if (apiNotInDom.length === 0 && domNotInApi.length === 0) {
+            console.log(`   ✅ All field IDs match perfectly!`);
+        }
+
         // Fields format: { field_id: { metadata, extractions, hasAnswers, answers, answerOptions, fieldName } }
         Object.entries(fields).forEach(([fieldId, fieldData]) => {
             // Find the term item with matching field ID
@@ -615,6 +656,8 @@ class DocumentDetailPage {
                 } else {
                     this.renderTextField(termItem, fieldData);
                 }
+            } else {
+                console.error(`   ❌ Field "${fieldId}" from API not found in DOM - no element with [data-field-id="${fieldId}"]`);
             }
         });
 
@@ -718,10 +761,39 @@ class DocumentDetailPage {
                     const pageBtn = document.createElement('button');
                     pageBtn.className = 'btn-page-ref';
                     pageBtn.textContent = `Page ${extraction.page}`;
-                    pageBtn.addEventListener('click', () => {
+                    pageBtn.addEventListener('click', (e) => {
+                        // FIXED: Don't stop propagation - let extraction handler decide
+                        // e.stopPropagation(); ← REMOVED
                         this.goToPage(extraction.page);
+                        // Also highlight when clicking page button
+                        this.highlightExtraction(extraction);
                     });
                     extractionDiv.appendChild(pageBtn);
+                }
+
+                // FIXED: Make entire extraction item clickable for highlighting (like renderTextField)
+                if (extraction.page || extraction.bbox) {
+                    extractionDiv.style.cursor = 'pointer';
+                    extractionDiv.title = extraction.bbox ? 'Click to highlight in document' : 'Click to find in document (text search)';
+                    extractionDiv.addEventListener('click', async (e) => {
+                        // Skip if user clicked page button (it handles highlighting itself)
+                        if (e.target.classList.contains('btn-page-ref')) {
+                            return;
+                        }
+                        await this.highlightExtraction(extraction);
+                    });
+                    console.log('✅ Click handler attached to answer field extraction:', {
+                        text: extraction.text?.substring(0, 30) + '...',
+                        page: extraction.page,
+                        hasBbox: !!extraction.bbox,
+                        hasSpans: !!extraction.spans
+                    });
+                } else {
+                    console.warn('⚠️ NO click handler - missing page/bbox:', {
+                        text: extraction.text?.substring(0, 30) + '...',
+                        page: extraction.page,
+                        bbox: extraction.bbox
+                    });
                 }
 
                 supportingDiv.appendChild(extractionDiv);
@@ -772,8 +844,11 @@ class DocumentDetailPage {
                     pageBtn.className = 'btn-page-ref';
                     pageBtn.textContent = `Page ${extraction.page}`;
                     pageBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
+                        // FIXED: Don't stop propagation - let extraction handler decide
+                        // e.stopPropagation(); ← REMOVED
                         this.goToPage(extraction.page);
+                        // Also highlight when clicking page button
+                        this.highlightExtraction(extraction);
                     });
                     extractionDiv.appendChild(pageBtn);
                 }
@@ -782,7 +857,11 @@ class DocumentDetailPage {
                 if (extraction.page || extraction.bbox) {
                     extractionDiv.style.cursor = 'pointer';
                     extractionDiv.title = extraction.bbox ? 'Click to highlight in document' : 'Click to find in document (text search)';
-                    extractionDiv.addEventListener('click', async () => {
+                    extractionDiv.addEventListener('click', async (e) => {
+                        // Skip if user clicked page button (it handles highlighting itself)
+                        if (e.target.classList.contains('btn-page-ref')) {
+                            return;
+                        }
                         await this.highlightExtraction(extraction);
                     });
                 }
@@ -1311,8 +1390,10 @@ class DocumentDetailPage {
                     viewport: viewport,
                     enhanceTextSelection: true
                 });
+                console.log(`✅ Text layer rendered for page ${pageNum} (${textContent.items.length} text items)`);
             } catch (textError) {
-                console.warn(`Text layer rendering failed for page ${pageNum}:`, textError);
+                console.error(`❌ CRITICAL: Text layer rendering FAILED for page ${pageNum}:`, textError);
+                console.error(`   This prevents word-level highlighting from working on this page!`);
             }
 
             // Store the scale for this page for coordinate transformations
@@ -1509,24 +1590,46 @@ class DocumentDetailPage {
     }
 
     async reRenderAllPages() {
+        console.log('🔄 Re-rendering all pages...');
+
+        // Save current highlighted extraction before clearing
+        const savedExtraction = this.currentHighlightedExtraction;
+        if (savedExtraction) {
+            console.log('💾 Saving current highlight for restoration after zoom:', savedExtraction);
+        }
+
         // Clear all rendered pages and re-render visible ones
         this.renderedPages.clear();
-        
+
         // Reset all containers to loading state
         for (let i = 0; i < this.pageContainers.length; i++) {
             const container = this.pageContainers[i];
             const pageNum = i + 1;
             container.innerHTML = '';
             container.style.minHeight = '800px';
-            
+
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'pdf-page-loading';
             loadingDiv.textContent = `Loading page ${pageNum}...`;
             container.appendChild(loadingDiv);
         }
-        
+
         // Re-render visible pages
         await this.renderVisiblePages();
+
+        // Restore highlight after re-rendering
+        if (savedExtraction) {
+            console.log('♻️ Restoring highlight after zoom:', savedExtraction);
+            // Use setTimeout to ensure DOM has fully updated
+            setTimeout(async () => {
+                try {
+                    await this.highlightExtraction(savedExtraction);
+                    console.log('✅ Highlight restored successfully after zoom');
+                } catch (error) {
+                    console.error('❌ Failed to restore highlight after zoom:', error);
+                }
+            }, 300);
+        }
     }
 
     updatePageInfo() {
@@ -1733,38 +1836,107 @@ class DocumentDetailPage {
 
     // Extraction Highlighting Methods
     async highlightExtraction(extraction) {
-        console.log('🎯 Highlighting extraction:', extraction);
+        console.log('🎯 Highlighting extraction clicked');
+        console.log('   Data structure check:');
+        console.log('   - Has extraction object:', !!extraction);
+        console.log('   - Has page:', extraction?.page);
+        console.log('   - Has bbox:', extraction?.bbox);
+        console.log('   - Has spans:', extraction?.spans?.length || 0);
+        console.log('   - Text length:', extraction?.text?.length || 0);
+        console.log('   Full extraction object:', extraction);
 
         if (!extraction || !extraction.page) {
-            console.error('❌ Missing page data:', {
-                hasExtraction: !!extraction,
-                hasPage: !!extraction?.page
-            });
+            console.error('❌ CANNOT HIGHLIGHT - Missing page data');
+            console.error('   hasExtraction:', !!extraction);
+            console.error('   hasPage:', !!extraction?.page);
+            console.error('   This means click handler should not have been attached!');
             return;
         }
 
+        // Store current extraction for zoom persistence
+        this.currentHighlightedExtraction = extraction;
+        console.log('💾 Stored extraction for zoom persistence');
+
         const pageNum = extraction.page;
 
-        // CHANGED: Use bbox for precision (like OpenContracts), fallback to text search
-        // Bbox provides pixel-perfect highlighting when available
-        // Research shows bbox-based is industry standard (OpenContracts, OpenAI Contract Agent)
-        if (extraction.bbox) {
-            console.log(`📄 Page ${pageNum} - using bbox (primary method - precise)`);
+        // CRITICAL FIX: Extract bbox from spans if not available at top level
+        // Many extractions have bbox=null but spans[0].bounds contains the coordinates
+        let bbox = extraction.bbox;
+
+        if (!bbox && extraction.spans && extraction.spans.length > 0) {
+            console.log('🔍 Top-level bbox is null, checking spans for bbox data...');
+            const firstSpan = extraction.spans[0];
+
+            // Check for bounds property (format: {left, bottom, right, top})
+            if (firstSpan.bounds) {
+                bbox = [
+                    firstSpan.bounds.left,
+                    firstSpan.bounds.bottom,
+                    firstSpan.bounds.right,
+                    firstSpan.bounds.top
+                ];
+                console.log('✅ Extracted bbox from spans[0].bounds:', bbox);
+                // Update extraction object so downstream code can use it
+                extraction.bbox = bbox;
+            }
+            // Check for bboxes array property
+            else if (firstSpan.bboxes && firstSpan.bboxes.length > 0) {
+                bbox = firstSpan.bboxes[0];
+                console.log('✅ Extracted bbox from spans[0].bboxes[0]:', bbox);
+                extraction.bbox = bbox;
+            }
+            else {
+                console.log('⚠️ No bbox data found in spans[0] (no bounds or bboxes property)');
+            }
+        }
+
+        // NEW: Prioritize word-level precise highlighting → bbox → text search
+        // Word-level gives exact word-by-word highlighting using PDF.js text layer
+        // Bbox provides rectangular highlighting as fallback
+        // Text search is final fallback when neither are available
+
+        // Try word-level highlighting first (requires text and text layer)
+        if (extraction.text && extraction.text.length >= 3) {
+            console.log(`🎯 Attempting WORD-LEVEL highlighting (primary method - precise)`);
+            console.log(`   Page ${pageNum}, text: "${extraction.text.substring(0, 50)}${extraction.text.length > 50 ? '...' : ''}"`);
+
+            try {
+                const success = await this.highlightExtractionWordLevel(extraction, pageNum);
+                if (success) {
+                    console.log(`✅ Word-level highlighting successful`);
+                    return; // Success - no need for fallback
+                } else {
+                    console.log(`⚠️ Word-level highlighting failed, trying bbox fallback...`);
+                }
+            } catch (error) {
+                console.error(`❌ Word-level highlighting error:`, error);
+                console.log(`📦 Falling back to bbox highlighting...`);
+            }
+        }
+
+        // Fallback 1: Bbox highlighting (if word-level failed or no text)
+        if (bbox) {
+            console.log(`📦 Using BBOX highlighting (fallback 1 - rectangular)`);
+            console.log(`   Page ${pageNum}, bbox:`, bbox);
             try {
                 await this.highlightWithBbox(extraction, pageNum);
+                return; // Success
             } catch (error) {
                 console.error(`❌ Bbox highlighting failed:`, error);
-                console.log(`📄 Falling back to text search`);
-                if (extraction.text && extraction.text.length >= 3) {
-                    await this.highlightWithTextSearch(extraction, pageNum);
-                }
+                console.log(`📄 Falling back to text search...`);
             }
-        } else if (extraction.text && extraction.text.length >= 3) {
-            // Fallback to text search only if no bbox available
-            console.log(`📄 Page ${pageNum} - using text search (fallback - no bbox)`);
+        }
+
+        // Fallback 2: Text search highlighting (final fallback)
+        if (extraction.text && extraction.text.length >= 3) {
+            console.log(`📄 Using TEXT SEARCH (fallback 2 - text matching)`);
+            console.log(`   Page ${pageNum}, text: "${extraction.text.substring(0, 50)}..."`);
             await this.highlightWithTextSearch(extraction, pageNum);
         } else {
-            console.warn(`⚠️ Cannot highlight: no valid bbox or text (text length: ${extraction.text?.length || 0})`);
+            console.error(`❌ CANNOT HIGHLIGHT - No valid highlighting data`);
+            console.error(`   bbox: ${bbox}`);
+            console.error(`   text length: ${extraction.text?.length || 0}`);
+            console.error(`   Need either bbox OR text (min 3 chars)`);
         }
     }
 
@@ -1830,11 +2002,25 @@ class DocumentDetailPage {
 
         // Ensure page is rendered
         if (!this.renderedPages.has(pageNum)) {
+            console.log(`   Rendering page ${pageNum} before text search...`);
             await this.renderPage(pageNum);
         }
 
-        // Wait for page to be ready
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Wait for page to be ready AND text layer to be rendered
+        // Increased wait time to ensure text layer is fully loaded
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Get the container and check for text layer
+        const container = this.pageContainers[pageNum - 1];
+
+        // ADDITIONAL: Wait specifically for text layer to exist
+        if (container) {
+            const textLayer = container.querySelector('.pdf-text-layer');
+            if (!textLayer) {
+                console.log(`   Waiting for text layer to be created...`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
 
         // Get text content for this page
         if (!this.pageTextContent.has(pageNum)) {
@@ -1849,40 +2035,49 @@ class DocumentDetailPage {
         }
 
         const textContent = this.pageTextContent.get(pageNum);
-        const container = this.pageContainers[pageNum - 1];
         const scale = parseFloat(container.dataset.scale) || this.scale;
         const page = await this.pdfDoc.getPage(pageNum);
         const viewport = page.getViewport({scale: scale});
 
-        // Enhanced text matching with normalization
-        const normalizeText = (text) => {
+        // Text matching with progressive normalization (preserves punctuation in early stages)
+        // FIXED: Previous implementation removed all punctuation causing false positives
+        // e.g., "(xi)" matched "(x)" because both became "xi" and "x"
+        const normalizeWhitespace = (text) => {
             return text.toLowerCase()
-                .replace(/\s+/g, ' ')  // Normalize whitespace
-                .replace(/[^\w\s]/g, '') // Remove punctuation
+                .replace(/\s+/g, ' ')  // Normalize whitespace only
                 .trim();
         };
 
-        const searchNorm = normalizeText(searchText);
+        const normalizeAggressive = (text) => {
+            return text.toLowerCase()
+                .replace(/\s+/g, ' ')  // Normalize whitespace
+                .replace(/[^\w\s]/g, '') // Remove punctuation (aggressive - can cause false positives)
+                .trim();
+        };
+
+        const searchWhitespaceNorm = normalizeWhitespace(searchText);
+        const searchAggressiveNorm = normalizeAggressive(searchText);
         const matches = [];
 
-        // Strategy 1: Exact match (case-insensitive)
+        // Strategy 1: Exact match (case-insensitive, preserves punctuation)
         textContent.items.forEach((item, index) => {
             if (item.str.toLowerCase().includes(searchText.toLowerCase())) {
                 matches.push({item, index, score: 100, method: 'exact'});
             }
         });
 
-        // Strategy 2: Normalized match (if no exact match)
+        // Strategy 2: Whitespace-normalized match (preserves punctuation)
+        // This prevents "(xi)" from matching "(x)"
         if (matches.length === 0) {
             textContent.items.forEach((item, index) => {
-                const itemNorm = normalizeText(item.str);
-                if (itemNorm.includes(searchNorm)) {
-                    matches.push({item, index, score: 80, method: 'normalized'});
+                const itemNorm = normalizeWhitespace(item.str);
+                if (itemNorm.includes(searchWhitespaceNorm)) {
+                    matches.push({item, index, score: 90, method: 'whitespace-normalized'});
                 }
             });
         }
 
-        // Strategy 3: Multi-word spanning match (combine adjacent items)
+        // Strategy 3: Multi-word spanning match (combine adjacent items, preserve punctuation)
         if (matches.length === 0 && searchText.split(' ').length > 1) {
             for (let i = 0; i < textContent.items.length - 1; i++) {
                 let combined = '';
@@ -1892,13 +2087,13 @@ class DocumentDetailPage {
                     combined += textContent.items[j].str + ' ';
                     itemGroup.push(textContent.items[j]);
 
-                    if (normalizeText(combined).includes(searchNorm)) {
+                    if (normalizeWhitespace(combined).includes(searchWhitespaceNorm)) {
                         // Found spanning match - use first and last items to create bounds
                         matches.push({
                             item: itemGroup[0],
                             itemGroup: itemGroup,
                             index: i,
-                            score: 60,
+                            score: 70,
                             method: 'spanning'
                         });
                         break;
@@ -1907,13 +2102,24 @@ class DocumentDetailPage {
             }
         }
 
-        // Strategy 4: Partial match (if still no match and text is long enough)
-        if (matches.length === 0 && searchNorm.length > 10) {
-            const partialSearch = searchNorm.substring(0, Math.max(10, Math.floor(searchNorm.length * 0.7)));
+        // Strategy 4: Aggressive normalized match (removes punctuation - last resort)
+        // Only used when all other strategies fail
+        if (matches.length === 0) {
             textContent.items.forEach((item, index) => {
-                const itemNorm = normalizeText(item.str);
+                const itemNorm = normalizeAggressive(item.str);
+                if (itemNorm.includes(searchAggressiveNorm)) {
+                    matches.push({item, index, score: 50, method: 'aggressive-normalized'});
+                }
+            });
+        }
+
+        // Strategy 5: Partial match (if still no match and text is long enough)
+        if (matches.length === 0 && searchAggressiveNorm.length > 10) {
+            const partialSearch = searchAggressiveNorm.substring(0, Math.max(10, Math.floor(searchAggressiveNorm.length * 0.7)));
+            textContent.items.forEach((item, index) => {
+                const itemNorm = normalizeAggressive(item.str);
                 if (itemNorm.includes(partialSearch)) {
-                    matches.push({item, index, score: 40, method: 'partial'});
+                    matches.push({item, index, score: 30, method: 'partial'});
                 }
             });
         }
@@ -2087,24 +2293,27 @@ class DocumentDetailPage {
         console.log(`📦 Overlay dimensions: ${overlay.style.width} x ${overlay.style.height}`);
         console.log(`📦 Container dimensions: ${container.offsetWidth}x${container.offsetHeight}`);
 
-        // CORRECTED: Zuva bbox uses TOP-LEFT origin (same as canvas/screen)
-        // Bbox format: [left, bottomY, right, topY] where bottomY > topY (Y increases downward)
+        // FIXED: Zuva bbox uses BOTTOM-LEFT origin (PDF standard)
+        // Backend code explicitly states: "Convert to [left, bottom, right, top] format for PDF coordinates"
+        // See: backend-fastapi/zuva_client.py:621 and backend-fastapi/main.py:2219
+        // In PDF coordinates: Y=0 is at BOTTOM, Y increases UPWARD
+        // Bbox format: [left, bottom, right, top] where bottom < top (Y increases upward from bottom)
         const bbox = extraction.bbox;
 
         // Handle both array format and object format
-        let left, right, topY, bottomY;
+        let left, right, top, bottom;
         if (Array.isArray(bbox)) {
-            // Array format: [left, bottomY, right, topY] (TOP-LEFT origin, confusingly ordered)
-            // bottomY > topY because Y increases downward (top of text has smaller Y)
-            [left, bottomY, right, topY] = bbox;
-            console.log(`📐 Bbox array [L,B,R,T]: [${left}, ${bottomY}, ${right}, ${topY}] (top-left origin)`);
+            // Array format: [left, bottom, right, top] (BOTTOM-LEFT origin - PDF standard)
+            // In PDF coords: bottom < top because Y increases upward from bottom of page
+            [left, bottom, right, top] = bbox;
+            console.log(`📐 Bbox array [L,B,R,T]: [${left}, ${bottom}, ${right}, ${top}] (PDF bottom-left origin)`);
         } else {
             // Object format: {left, right, top, bottom}
             left = bbox.left;
             right = bbox.right;
-            topY = bbox.top;
-            bottomY = bbox.bottom;
-            console.log(`📐 Bbox object: {left=${left}, top=${topY}, right=${right}, bottom=${bottomY}}`);
+            top = bbox.top;
+            bottom = bbox.bottom;
+            console.log(`📐 Bbox object: {left=${left}, top=${top}, right=${right}, bottom=${bottom}}`);
         }
 
         // VALIDATION: Ensure bbox coordinates are valid
@@ -2112,15 +2321,18 @@ class DocumentDetailPage {
             console.error(`❌ Invalid bbox: left (${left}) >= right (${right})`);
             throw new Error('Invalid bbox: left >= right');
         }
-        // For top-left origin: bottomY > topY (bottom is further down page, has higher Y)
-        if (bottomY <= topY) {
-            console.error(`❌ Invalid bbox: bottomY (${bottomY}) <= topY (${topY}) - expected bottomY > topY in top-left origin`);
-            throw new Error('Invalid bbox: bottomY must be > topY');
+        // For bottom-left origin (PDF standard): bottom < top (Y increases upward)
+        // AUTO-FIX: If bottom > top, swap them (backend may send inverted Y coordinates)
+        if (bottom >= top) {
+            console.warn(`⚠️ Invalid bbox detected: bottom (${bottom}) >= top (${top})`);
+            console.warn(`   Auto-correcting by swapping bottom and top...`);
+            [bottom, top] = [top, bottom];
+            console.log(`   ✅ Corrected bbox: bottom=${bottom}, top=${top}`);
         }
 
-        // FIXED: Calculate coordinate space conversion scale
-        // Bbox coordinates are in PDF's mediaBox coordinate space
-        // Need to transform FROM: PDF mediaBox space TO: Viewport display space
+        // Calculate coordinate space conversion scale
+        // Bbox coordinates are in PDF's mediaBox coordinate space (bottom-left origin)
+        // Need to transform FROM: PDF mediaBox space TO: Viewport display space (top-left origin)
         const coordScaleX = viewport.width / pdfMediaBoxWidth;
         const coordScaleY = viewport.height / pdfMediaBoxHeight;
 
@@ -2128,7 +2340,6 @@ class DocumentDetailPage {
         console.log(`   MediaBox: ${pdfMediaBoxWidth.toFixed(1)} x ${pdfMediaBoxHeight.toFixed(1)}`);
         console.log(`   Viewport: ${viewport.width.toFixed(1)} x ${viewport.height.toFixed(1)}`);
         console.log(`   Scale X: ${coordScaleX.toFixed(4)}, Scale Y: ${coordScaleY.toFixed(4)}`);
-        console.log(`   (Previous display scale ${scale.toFixed(4)} was WRONG for bbox transform!)`);
 
         // VALIDATION: Verify scale is reasonable
         if (coordScaleX > 2.0 || coordScaleY > 2.0) {
@@ -2142,15 +2353,20 @@ class DocumentDetailPage {
             console.warn(`   Expected range: 0.3 - 2.0 for most PDFs`);
         }
 
-        // Apply correct coordinate space transformation
+        // Apply coordinate transformation with Y-axis flip
+        // PDF uses bottom-left origin, screen uses top-left origin
+        // X: same direction in both systems
+        // Y: must flip - screenY = viewportHeight - pdfY
         const x = left * coordScaleX;
-        const y = topY * coordScaleY;
+        const height = (top - bottom) * coordScaleY;  // Height is always positive (top > bottom in PDF)
+        const y = viewport.height - (top * coordScaleY);  // Flip Y-axis: PDF top → screen top
         const width = (right - left) * coordScaleX;
-        const height = (bottomY - topY) * coordScaleY;
 
-        console.log(`📍 Bbox transform: [${left}, ${bottomY}, ${right}, ${topY}] →`);
-        console.log(`   Canvas: x=${x.toFixed(1)}, y=${y.toFixed(1)}, w=${width.toFixed(1)}, h=${height.toFixed(1)}`);
-        console.log(`   Previous WRONG: x=${(left * scale).toFixed(1)}, y=${(topY * scale).toFixed(1)} (would be beyond viewport!)`);
+        console.log(`📍 Bbox transform (PDF → Screen):`);
+        console.log(`   PDF coords: [left=${left}, bottom=${bottom}, right=${right}, top=${top}]`);
+        console.log(`   Scaled PDF: left=${(left * coordScaleX).toFixed(1)}, bottom=${(bottom * coordScaleY).toFixed(1)}, top=${(top * coordScaleY).toFixed(1)}`);
+        console.log(`   Y-axis flip: PDF top ${(top * coordScaleY).toFixed(1)} → Screen Y ${y.toFixed(1)} (viewport ${viewport.height.toFixed(1)} - ${(top * coordScaleY).toFixed(1)})`);
+        console.log(`   Final: x=${x.toFixed(1)}, y=${y.toFixed(1)}, w=${width.toFixed(1)}, h=${height.toFixed(1)}`);
 
         // VALIDATION: Check if highlight is within viewport bounds
         if (x < 0 || y < 0 || x + width > viewport.width || y + height > viewport.height) {
@@ -2165,7 +2381,7 @@ class DocumentDetailPage {
             console.log(`📐 Clamped to: x=${clampedX.toFixed(1)}, y=${clampedY.toFixed(1)}, w=${clampedWidth.toFixed(1)}, h=${clampedHeight.toFixed(1)}`);
         }
 
-        console.log(`🎯 Final canvas coords: x=${x.toFixed(1)}, y=${y.toFixed(1)}, w=${width.toFixed(1)}, h=${height.toFixed(1)}`);
+        console.log(`🎯 Final screen coords: x=${x.toFixed(1)}, y=${y.toFixed(1)}, w=${width.toFixed(1)}, h=${height.toFixed(1)}`);
 
         // Create highlight element
         const highlight = document.createElement('div');
@@ -2219,6 +2435,367 @@ class DocumentDetailPage {
     clearExtractionHighlights() {
         const highlights = document.querySelectorAll('.extraction-highlight');
         highlights.forEach(highlight => highlight.remove());
+        // Clear stored extraction when manually clearing highlights
+        this.currentHighlightedExtraction = null;
+    }
+
+    clearWordHighlights() {
+        // Clear word-level highlights from text layer spans
+        const highlightedSpans = document.querySelectorAll('.pdf-text-layer span[data-word-highlighted="true"]');
+        highlightedSpans.forEach(span => {
+            span.style.backgroundColor = '';
+            span.style.borderRadius = '';
+            span.removeAttribute('data-word-highlighted');
+        });
+        console.log(`🧹 Cleared ${highlightedSpans.length} word-level highlights`);
+    }
+
+    // Word-Level Precise Highlighting
+    async highlightExtractionWordLevel(extraction, pageNum) {
+        console.log('🎯 Starting word-level precise highlighting');
+        console.log(`   Page: ${pageNum}`);
+        console.log(`   Text: "${extraction.text?.substring(0, 50)}${extraction.text?.length > 50 ? '...' : ''}"`);
+
+        // Clear previous highlights (both bbox and word-level)
+        this.clearExtractionHighlights();
+        this.clearWordHighlights();
+
+        // Navigate to page
+        await this.goToPage(pageNum);
+
+        // Ensure page is rendered
+        if (!this.renderedPages.has(pageNum)) {
+            await this.renderPage(pageNum);
+        }
+
+        // Wait for page to be ready
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Find text layer for this page
+        const container = this.pageContainers[pageNum - 1];
+        if (!container) {
+            console.error(`❌ No container found for page ${pageNum}`);
+            return false;
+        }
+
+        const textLayer = container.querySelector('.pdf-text-layer');
+        if (!textLayer) {
+            console.error(`❌ No text layer found for page ${pageNum}`);
+            return false;
+        }
+
+        const textLayerSpans = Array.from(textLayer.querySelectorAll('span'));
+        if (textLayerSpans.length === 0) {
+            console.error(`❌ No text spans found in text layer`);
+            return false;
+        }
+
+        console.log(`✅ Found text layer with ${textLayerSpans.length} spans`);
+
+        // Get extraction text and tokenize into words
+        const extractionText = extraction.text;
+        if (!extractionText || extractionText.length === 0) {
+            console.error(`❌ No extraction text to highlight`);
+            return false;
+        }
+
+        // Tokenize extraction text - preserve punctuation for better matching
+        const extractionWords = this.tokenizeForHighlighting(extractionText);
+        console.log(`📝 Tokenized into ${extractionWords.length} words:`, extractionWords);
+
+        // Optional: Use bbox to filter spans (performance optimization for large documents)
+        let spansToSearch = textLayerSpans;
+        if (extraction.bbox) {
+            spansToSearch = this.filterSpansByBbox(textLayerSpans, extraction.bbox, container, pageNum);
+            console.log(`🔍 Filtered to ${spansToSearch.length} spans using bbox region`);
+        }
+
+        // Find matching spans using progressive matching strategy
+        const matchedSpans = this.findMatchingSpans(extractionWords, spansToSearch, extractionText);
+
+        if (matchedSpans.length === 0) {
+            console.warn(`⚠️ No matching spans found for word-level highlighting`);
+            return false;
+        }
+
+        console.log(`✅ Found ${matchedSpans.length} matching spans`);
+
+        // Apply highlighting to matched spans
+        matchedSpans.forEach((span, index) => {
+            span.style.backgroundColor = 'rgba(255, 255, 0, 0.4)'; // Yellow highlight
+            span.style.borderRadius = '2px';
+            span.setAttribute('data-word-highlighted', 'true');
+
+            if (index === 0) {
+                console.log(`   First span: "${span.textContent}"`);
+            }
+            if (index === matchedSpans.length - 1) {
+                console.log(`   Last span: "${span.textContent}"`);
+            }
+        });
+
+        console.log(`✅ Word-level highlighting complete - ${matchedSpans.length} spans highlighted`);
+
+        // Scroll first highlighted span into view
+        setTimeout(() => {
+            matchedSpans[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }, 100);
+
+        return true;
+    }
+
+    // Tokenize text for word-level matching
+    tokenizeForHighlighting(text) {
+        // Split on whitespace while preserving punctuation attached to words
+        // This handles cases like "word," "word." "word)" correctly
+        const tokens = text
+            .trim()
+            .split(/\s+/)  // Split on whitespace
+            .filter(token => token.length > 0);
+
+        return tokens;
+    }
+
+    // Filter text layer spans by bbox region (performance optimization)
+    filterSpansByBbox(spans, bbox, container, pageNum) {
+        try {
+            // IMPORTANT: The bbox is in PDF coordinate space (bottom-left origin)
+            // The spans are positioned in screen coordinate space (top-left origin)
+            // We need to transform the bbox to screen coordinates before comparing
+
+            const [left, bottom, right, top] = Array.isArray(bbox) ? bbox : [bbox.left, bbox.bottom, bbox.right, bbox.top];
+
+            // AUTO-FIX: If bottom > top, swap them (backend may send inverted Y coordinates)
+            let bboxBottom = bottom;
+            let bboxTop = top;
+            if (bboxBottom > bboxTop) {
+                console.warn(`⚠️ filterSpansByBbox: Swapping inverted bbox Y coords (bottom=${bboxBottom}, top=${bboxTop})`);
+                [bboxBottom, bboxTop] = [bboxTop, bboxBottom];
+            }
+
+            // Get the PDF page to access viewport information
+            // We need the viewport to transform PDF coords to screen coords
+            const canvas = container.querySelector('.pdf-page-canvas');
+            if (!canvas) {
+                console.warn(`⚠️ No canvas found for bbox filtering, returning all spans`);
+                return spans;
+            }
+
+            // Get viewport dimensions from the canvas
+            const viewportWidth = canvas.width / window.devicePixelRatio;
+            const viewportHeight = canvas.height / window.devicePixelRatio;
+
+            // Get PDF page dimensions (mediaBox)
+            // Assuming standard letter size if not available
+            const pdfWidth = 612;  // Standard PDF width
+            const pdfHeight = 792; // Standard PDF height
+
+            // Calculate scale from PDF to viewport
+            const scaleX = viewportWidth / pdfWidth;
+            const scaleY = viewportHeight / pdfHeight;
+
+            // Transform bbox from PDF coordinates to screen coordinates
+            // PDF: bottom-left origin, Y increases upward
+            // Screen: top-left origin, Y increases downward
+            const screenX = left * scaleX;
+            const screenY = viewportHeight - (bboxTop * scaleY);  // Flip Y axis
+            const screenWidth = (right - left) * scaleX;
+            const screenHeight = (bboxTop - bboxBottom) * scaleY;
+
+            console.log(`🔍 BBox filtering:`);
+            console.log(`   PDF bbox: [${left}, ${bboxBottom}, ${right}, ${bboxTop}]`);
+            console.log(`   Screen bbox: x=${screenX.toFixed(1)}, y=${screenY.toFixed(1)}, w=${screenWidth.toFixed(1)}, h=${screenHeight.toFixed(1)}`);
+            console.log(`   Viewport: ${viewportWidth.toFixed(1)}x${viewportHeight.toFixed(1)}, Scale: ${scaleX.toFixed(3)}x${scaleY.toFixed(3)}`);
+
+            // Filter spans that overlap with the bbox region
+            // Use a generous buffer to avoid filtering out valid matches
+            const buffer = 50; // pixels
+
+            const containerRect = container.getBoundingClientRect();
+
+            const filtered = spans.filter(span => {
+                const rect = span.getBoundingClientRect();
+
+                // Convert to relative coordinates within the container
+                const spanX = rect.left - containerRect.left;
+                const spanY = rect.top - containerRect.top;
+
+                // Check for overlap with buffer
+                const overlaps = !(
+                    spanX > screenX + screenWidth + buffer ||
+                    spanX + rect.width < screenX - buffer ||
+                    spanY > screenY + screenHeight + buffer ||
+                    spanY + rect.height < screenY - buffer
+                );
+
+                return overlaps;
+            });
+
+            console.log(`   Filtered ${spans.length} spans → ${filtered.length} spans`);
+
+            // If filtering removed ALL spans, return all spans (filter was too aggressive)
+            if (filtered.length === 0 && spans.length > 0) {
+                console.warn(`   ⚠️ Filtering removed all spans! Returning all spans instead.`);
+                return spans;
+            }
+
+            return filtered;
+        } catch (error) {
+            console.warn(`⚠️ Error filtering spans by bbox:`, error);
+            // Return all spans on error
+            return spans;
+        }
+    }
+
+    // Find matching spans using progressive matching strategies
+    findMatchingSpans(extractionWords, spans, fullExtractionText) {
+        console.log(`🔍 Finding matching spans...`);
+        console.log(`   Extraction words: ${extractionWords.length}`);
+        console.log(`   Available spans: ${spans.length}`);
+
+        const matchedSpans = [];
+
+        // Strategy 1: Exact sequential word matching
+        // Try to find a sequence of spans that matches the extraction words exactly
+        let matched = this.findSequentialMatch(extractionWords, spans);
+        if (matched.length > 0) {
+            console.log(`✅ Strategy 1 (Sequential): Found ${matched.length} spans`);
+            return matched;
+        }
+
+        // Strategy 2: Fuzzy sequential matching (normalize whitespace and case)
+        matched = this.findFuzzySequentialMatch(extractionWords, spans);
+        if (matched.length > 0) {
+            console.log(`✅ Strategy 2 (Fuzzy Sequential): Found ${matched.length} spans`);
+            return matched;
+        }
+
+        // Strategy 3: Full text search within spans (for multi-word extractions in single span)
+        matched = this.findFullTextMatch(fullExtractionText, spans);
+        if (matched.length > 0) {
+            console.log(`✅ Strategy 3 (Full Text): Found ${matched.length} spans`);
+            return matched;
+        }
+
+        // Strategy 4: Partial matching (highlight spans containing any extraction words)
+        matched = this.findPartialMatch(extractionWords, spans);
+        if (matched.length > 0) {
+            console.log(`⚠️ Strategy 4 (Partial): Found ${matched.length} spans (may not be complete)`);
+            return matched;
+        }
+
+        console.warn(`❌ No matching strategy succeeded`);
+        return [];
+    }
+
+    // Strategy 1: Exact sequential word matching
+    findSequentialMatch(words, spans) {
+        const normalizeWord = (word) => word.toLowerCase().trim();
+        const normalizedWords = words.map(normalizeWord);
+
+        for (let i = 0; i < spans.length; i++) {
+            const matched = [];
+            let wordIndex = 0;
+
+            for (let j = i; j < spans.length && wordIndex < normalizedWords.length; j++) {
+                const spanText = normalizeWord(spans[j].textContent);
+
+                if (spanText === normalizedWords[wordIndex]) {
+                    matched.push(spans[j]);
+                    wordIndex++;
+                } else if (spanText.includes(normalizedWords[wordIndex])) {
+                    // Partial match within span (e.g., "CREDIT AGREEMENT" in one span)
+                    matched.push(spans[j]);
+                    wordIndex++;
+                } else if (matched.length > 0) {
+                    // Break sequence if we've started matching but hit a non-match
+                    break;
+                }
+            }
+
+            if (wordIndex === normalizedWords.length) {
+                return matched;
+            }
+        }
+
+        return [];
+    }
+
+    // Strategy 2: Fuzzy sequential matching (handle spacing variations)
+    findFuzzySequentialMatch(words, spans) {
+        const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, ' ').trim();
+        const fullText = normalizeText(words.join(' '));
+
+        for (let i = 0; i < spans.length; i++) {
+            const matched = [];
+            let accumulatedText = '';
+
+            for (let j = i; j < spans.length; j++) {
+                const spanText = spans[j].textContent;
+                matched.push(spans[j]);
+                accumulatedText += ' ' + spanText;
+
+                const normalized = normalizeText(accumulatedText);
+
+                if (normalized.includes(fullText)) {
+                    return matched;
+                }
+
+                // Early exit if accumulated text is much longer than target
+                if (normalized.length > fullText.length * 2) {
+                    break;
+                }
+            }
+        }
+
+        return [];
+    }
+
+    // Strategy 3: Full text match (extraction text might be in single span)
+    findFullTextMatch(extractionText, spans) {
+        const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, ' ').trim();
+        const normalizedExtraction = normalizeText(extractionText);
+
+        // FIXED: Limit search to first 50 spans and max 10 results to prevent highlighting entire document
+        const searchLimit = Math.min(spans.length, 50);
+        const matched = [];
+
+        for (let i = 0; i < searchLimit; i++) {
+            const span = spans[i];
+            const spanText = normalizeText(span.textContent);
+
+            // Only match if extraction text is contained within span text
+            if (spanText.includes(normalizedExtraction)) {
+                matched.push(span);
+
+                // Limit to max 10 spans to avoid over-highlighting
+                if (matched.length >= 10) {
+                    console.log(`⚠️ Full text match limited to ${matched.length} spans`);
+                    break;
+                }
+            }
+        }
+
+        return matched;
+    }
+
+    // Strategy 4: Partial matching (fallback)
+    findPartialMatch(words, spans) {
+        const normalizeWord = (word) => word.toLowerCase().trim();
+        const normalizedWords = words.map(normalizeWord);
+
+        const matched = spans.filter(span => {
+            const spanText = normalizeWord(span.textContent);
+            return normalizedWords.some(word =>
+                spanText.includes(word) || word.includes(spanText)
+            );
+        });
+
+        // Limit to avoid highlighting too much
+        return matched.slice(0, Math.min(matched.length, words.length * 2));
     }
 
     async goToSearchResult(index) {
@@ -2428,7 +3005,7 @@ class DocumentDetailPage {
                 const data = await response.json();
                 if (data.status === 'complete' && data.results) {
                     console.log('📊 Extraction results loaded:', data.results);
-                    this.updateExtractedTermsWithRealData(data.results);
+                    this.updateTermsWithExtractionResults(data.results);
                 }
             }
         } catch (error) {

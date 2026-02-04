@@ -2764,7 +2764,8 @@ function initializeCustomDropdown() {
     updateDropdownText();
 }
 
-// Populate dropdown options with hierarchical structure
+// Populate dropdown options with 3-level hierarchical structure
+// Implements smart filtering: hides children of already-selected parents
 function populateDropdownOptions() {
     const dropdownMenu = document.getElementById('document-types-menu');
     if (!dropdownMenu) return;
@@ -2780,35 +2781,146 @@ function populateDropdownOptions() {
         return;
     }
 
-    // Render hierarchical structure
-    DOCUMENT_TYPES_HIERARCHICAL.forEach(category => {
-        // Add category header (non-selectable)
-        const categoryHeader = document.createElement('div');
-        categoryHeader.className = 'dropdown-category-header';
-        categoryHeader.textContent = category.name;
-        dropdownMenu.appendChild(categoryHeader);
+    // Get currently selected items to implement smart filtering
+    const selectedItems = AppState.workflow.documentTypes || new Set();
 
-        // Add document types under this category
-        if (category.types && category.types.length > 0) {
-            category.types.forEach(type => {
-                const option = document.createElement('div');
-                option.className = 'dropdown-option dropdown-subtype';
-                option.textContent = type.name;
-                option.dataset.value = type.name;
-                option.dataset.categoryId = category.id;
-                option.dataset.typeId = type.id;
+    // Helper function to check if an item or its parent is selected
+    function isItemOrParentSelected(itemPath) {
+        // Check if this exact item is selected
+        if (selectedItems.has(itemPath)) return true;
 
-                // Check if already selected
-                if (AppState.workflow.documentTypes.has(type.name)) {
-                    option.classList.add('selected');
-                }
+        // Check if any parent path is selected
+        const pathParts = itemPath.split(' > ');
+        for (let i = 1; i < pathParts.length; i++) {
+            const parentPath = pathParts.slice(0, i).join(' > ');
+            if (selectedItems.has(parentPath)) return true;
+        }
+        return false;
+    }
 
-                // Handle option click
-                option.addEventListener('click', function() {
-                    toggleDocumentType(type.name);
+    // Render 3-level hierarchical structure
+    DOCUMENT_TYPES_HIERARCHICAL.forEach(topCategory => {
+        const topPath = topCategory.name;
+
+        // Level 1: Top-level category header (Contract / Non-Contract)
+        // Make it selectable with checkbox
+        const topCategoryHeader = document.createElement('div');
+        topCategoryHeader.className = 'dropdown-category-header level-1';
+
+        const topCheckbox = document.createElement('input');
+        topCheckbox.type = 'checkbox';
+        topCheckbox.className = 'category-checkbox';
+        topCheckbox.dataset.path = topPath;
+        topCheckbox.dataset.level = '1';
+        topCheckbox.dataset.categoryId = topCategory.id;
+        topCheckbox.checked = selectedItems.has(topPath);
+
+        const topLabel = document.createElement('label');
+        topLabel.textContent = topCategory.name;
+        topLabel.style.fontWeight = 'bold';
+        topLabel.style.cursor = 'pointer';
+
+        topCategoryHeader.appendChild(topCheckbox);
+        topCategoryHeader.appendChild(topLabel);
+
+        topCheckbox.addEventListener('change', function() {
+            toggleDocumentTypeSelection(topPath, topCategory);
+        });
+
+        topLabel.addEventListener('click', function(e) {
+            e.stopPropagation();
+            topCheckbox.checked = !topCheckbox.checked;
+            toggleDocumentTypeSelection(topPath, topCategory);
+        });
+
+        dropdownMenu.appendChild(topCategoryHeader);
+
+        // If top category is selected, don't show its children (smart filtering)
+        if (selectedItems.has(topPath)) {
+            return; // Skip rendering children
+        }
+
+        // Level 2: Sub-categories (Debt Related Agt, Banking Document, etc.)
+        if (topCategory.children && topCategory.children.length > 0) {
+            topCategory.children.forEach(subCategory => {
+                const subPath = `${topPath} > ${subCategory.name}`;
+
+                // Sub-category with checkbox
+                const subCategoryDiv = document.createElement('div');
+                subCategoryDiv.className = 'dropdown-category-sub level-2';
+
+                const subCheckbox = document.createElement('input');
+                subCheckbox.type = 'checkbox';
+                subCheckbox.className = 'category-checkbox';
+                subCheckbox.dataset.path = subPath;
+                subCheckbox.dataset.level = '2';
+                subCheckbox.dataset.categoryId = subCategory.id;
+                subCheckbox.dataset.parentId = topCategory.id;
+                subCheckbox.checked = selectedItems.has(subPath);
+
+                const subLabel = document.createElement('label');
+                subLabel.textContent = subCategory.name;
+                subLabel.style.cursor = 'pointer';
+                subLabel.style.paddingLeft = '20px';
+
+                subCategoryDiv.appendChild(subCheckbox);
+                subCategoryDiv.appendChild(subLabel);
+
+                subCheckbox.addEventListener('change', function() {
+                    toggleDocumentTypeSelection(subPath, subCategory, topCategory);
                 });
 
-                dropdownMenu.appendChild(option);
+                subLabel.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    subCheckbox.checked = !subCheckbox.checked;
+                    toggleDocumentTypeSelection(subPath, subCategory, topCategory);
+                });
+
+                dropdownMenu.appendChild(subCategoryDiv);
+
+                // If sub-category is selected, don't show its types (smart filtering)
+                if (selectedItems.has(subPath)) {
+                    return; // Skip rendering types
+                }
+
+                // Level 3: Types under this sub-category
+                if (subCategory.types && subCategory.types.length > 0) {
+                    subCategory.types.forEach(type => {
+                        const typePath = `${subPath} > ${type.name}`;
+
+                        const typeOption = document.createElement('div');
+                        typeOption.className = 'dropdown-option dropdown-type level-3';
+
+                        const typeCheckbox = document.createElement('input');
+                        typeCheckbox.type = 'checkbox';
+                        typeCheckbox.className = 'type-checkbox';
+                        typeCheckbox.dataset.path = typePath;
+                        typeCheckbox.dataset.level = '3';
+                        typeCheckbox.dataset.typeId = type.id;
+                        typeCheckbox.dataset.categoryId = subCategory.id;
+                        typeCheckbox.checked = selectedItems.has(typePath);
+
+                        const typeLabel = document.createElement('label');
+                        typeLabel.textContent = type.name;
+                        typeLabel.style.cursor = 'pointer';
+                        typeLabel.style.paddingLeft = '40px';
+
+                        typeOption.appendChild(typeCheckbox);
+                        typeOption.appendChild(typeLabel);
+
+                        typeCheckbox.addEventListener('change', function() {
+                            toggleDocumentTypeSelection(typePath, type, subCategory, topCategory);
+                        });
+
+                        typeLabel.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            typeCheckbox.checked = !typeCheckbox.checked;
+                            toggleDocumentTypeSelection(typePath, type, subCategory, topCategory);
+                        });
+
+                        dropdownMenu.appendChild(typeOption);
+                    });
+                }
             });
         }
     });
@@ -2847,23 +2959,64 @@ function closeDropdown() {
     dropdownMenu.classList.remove('show');
 }
 
-// Toggle document type selection
-function toggleDocumentType(type) {
-    if (AppState.workflow.documentTypes.has(type)) {
+// Toggle document type selection with smart parent-child logic
+// When a parent is selected, all its children are automatically covered
+// When a parent is deselected, it's removed from selection
+function toggleDocumentTypeSelection(path, item, parent, grandparent) {
+    const selectedItems = AppState.workflow.documentTypes || new Set();
+
+    if (selectedItems.has(path)) {
         // Remove if already selected
-        AppState.workflow.documentTypes.delete(type);
+        selectedItems.delete(path);
+
+        // Also remove any child items that might have been individually selected
+        // (cleanup in case of previous individual selections)
+        const itemsToRemove = Array.from(selectedItems).filter(selectedPath =>
+            selectedPath.startsWith(path + ' > ')
+        );
+        itemsToRemove.forEach(childPath => selectedItems.delete(childPath));
+
     } else {
         // Add if not selected
-        AppState.workflow.documentTypes.add(type);
+        selectedItems.add(path);
+
+        // Remove any child selections since parent now covers them
+        const itemsToRemove = Array.from(selectedItems).filter(selectedPath =>
+            selectedPath.startsWith(path + ' > ')
+        );
+        itemsToRemove.forEach(childPath => selectedItems.delete(childPath));
+
+        // Check if we should remove parent selections
+        // If selecting a child but parent is already selected, keep parent selected
+        // But if we're selecting children individually, we might want to remove the broader parent
+
+        // Remove any parent categories that might have been selected
+        // (because now we're being more specific)
+        const pathParts = path.split(' > ');
+        if (pathParts.length > 1) {
+            // This is a child item, check if parent is selected
+            for (let i = 1; i < pathParts.length; i++) {
+                const parentPath = pathParts.slice(0, i).join(' > ');
+                // Don't remove parent if user is selecting children - let them keep both
+                // This allows flexibility in selection
+            }
+        }
     }
-    
+
+    AppState.workflow.documentTypes = selectedItems;
+
     // Update UI
     updateDropdownText();
     renderSelectedDocumentTypes();
     validateStep3Form();
-    
-    // Refresh the dropdown options to show updated selections
+
+    // Refresh the dropdown options to show updated selections (smart filtering)
     populateDropdownOptions();
+}
+
+// Legacy function for backward compatibility
+function toggleDocumentType(type) {
+    toggleDocumentTypeSelection(type, { name: type });
 }
 
 // Update dropdown button text
@@ -2887,39 +3040,54 @@ function updateDropdownText() {
 }
 
 // Render selected document types as chips
+// Display hierarchical path for clarity (e.g., "Contract > Debt Related Agt > Credit & Loan Agt")
 function renderSelectedDocumentTypes() {
     const container = document.getElementById('selected-doc-types');
     if (!container) return;
-    
-    if (AppState.workflow.documentTypes.size === 0) {
+
+    const selectedItems = AppState.workflow.documentTypes || new Set();
+
+    if (selectedItems.size === 0) {
         container.innerHTML = '';
         return;
     }
-    
+
     let html = '';
-    AppState.workflow.documentTypes.forEach(type => {
+    selectedItems.forEach(path => {
+        // Show the full path for clarity, or just the last part
+        // For top-level selections like "Contract", show as is
+        // For deeper selections like "Contract > Debt Related Agt", show full path
+        const displayText = path;
+
         html += `
-            <div class="doc-type-chip">
-                <span>${type}</span>
-                <button class="remove-chip" data-type="${type}">
+            <div class="doc-type-chip" data-path="${path}">
+                <span title="${path}">${displayText}</span>
+                <button class="remove-chip" data-path="${path}">
                     <span class="material-icons">close</span>
                 </button>
             </div>
         `;
     });
-    
+
     container.innerHTML = html;
-    
+
     // Add event listeners for remove buttons
     container.querySelectorAll('.remove-chip').forEach(btn => {
         btn.addEventListener('click', function() {
-            const typeToRemove = this.dataset.type;
-            AppState.workflow.documentTypes.delete(typeToRemove);
-            
+            const pathToRemove = this.dataset.path;
+            AppState.workflow.documentTypes.delete(pathToRemove);
+
+            // Also remove any child items
+            const itemsToRemove = Array.from(AppState.workflow.documentTypes).filter(selectedPath =>
+                selectedPath.startsWith(pathToRemove + ' > ')
+            );
+            itemsToRemove.forEach(childPath => AppState.workflow.documentTypes.delete(childPath));
+
             // Update dropdown display
             updateDropdownText();
             renderSelectedDocumentTypes();
             validateStep3Form();
+            populateDropdownOptions(); // Refresh dropdown to show newly available items
         });
     });
 }

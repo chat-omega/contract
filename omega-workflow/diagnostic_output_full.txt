@@ -1,0 +1,700 @@
+================================================================================
+PDF HIGHLIGHTING DIAGNOSTIC REPORT
+Credit Agreement Fields Analysis (54 Fields)
+================================================================================
+
+🔍 Finding credit agreement documents...
+✅ Found 2 document(s) analyzed with credit-agreement workflow
+
+📄 Analyzing Document: PDF SOLUTIONS Agreement.pdf
+   Document ID: 37fb6240
+   Extraction ID: 11
+--------------------------------------------------------------------------------
+
+📊 Found 13 fields in extraction results
+
+📊 SUMMARY
+================================================================================
+✅ Working (has page & bbox):        1 fields
+⚠️  Missing page only:                0 fields
+⚠️  Missing bbox only:                0 fields
+❌ Missing both page & bbox:         0 fields
+📭 No extractions at all:            53 fields
+📝 Total fields analyzed:            54 fields
+
+📭 NO EXTRACTIONS
+--------------------------------------------------------------------------------
+
+  Field: Parties Involved
+  ID: f3e7d8c2-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+  Status: No extractions found
+
+  Field: Effective Date
+  ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  Status: No extractions found
+
+  Field: Facility Amount
+  ID: b2c3d4e5-f6a7-8901-bcde-f12345678901
+  Status: No extractions found
+
+  Field: Currency
+  ID: c3d4e5f6-a7b8-9012-cdef-123456789012
+  Status: No extractions found
+
+  Field: Interest Rate
+  ID: d4e5f6a7-b8c9-0123-def1-234567890123
+  Status: No extractions found
+
+  Field: Maturity Date
+  ID: e5f6a7b8-c9d0-1234-ef12-345678901234
+  Status: No extractions found
+
+  Field: Purpose of Loan
+  ID: f6a7b8c9-d0e1-2345-f123-456789012345
+  Status: No extractions found
+
+  Field: Repayment Terms
+  ID: a7b8c9d0-e1f2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Prepayment Provisions
+  ID: b8c9d0e1-f2a3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Security/Collateral
+  ID: c9d0e1f2-a3b4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Guarantees
+  ID: d0e1f2a3-b4c5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Financial Covenants
+  ID: e1f2a3b4-c5d6-7890-5678-901234567890
+  Status: No extractions found
+
+  Field: Negative Covenants
+  ID: f2a3b4c5-d6e7-8901-6789-012345678901
+  Status: No extractions found
+
+  Field: Affirmative Covenants
+  ID: a3b4c5d6-e7f8-9012-7890-123456789012
+  Status: No extractions found
+
+  Field: Events of Default
+  ID: b4c5d6e7-f8a9-0123-8901-234567890123
+  Status: No extractions found
+
+  Field: Conditions Precedent
+  ID: c5d6e7f8-a9b0-1234-9012-345678901234
+  Status: No extractions found
+
+  Field: Representations and Warranties
+  ID: d6e7f8a9-b0c1-2345-0123-456789012345
+  Status: No extractions found
+
+  Field: Fees and Expenses
+  ID: e7f8a9b0-c1d2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Amendments and Waivers
+  ID: f8a9b0c1-d2e3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Assignment and Transfer
+  ID: a9b0c1d2-e3f4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Governing Law
+  ID: b0c1d2e3-f4a5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Jurisdiction
+  ID: c1d2e3f4-a5b6-7890-5678-901234567890
+  Status: No extractions found
+
+  Field: Notice Provisions
+  ID: d2e3f4a5-b6c7-8901-6789-012345678901
+  Status: No extractions found
+
+  Field: Confidentiality
+  ID: e3f4a5b6-c7d8-9012-7890-123456789012
+  Status: No extractions found
+
+  Field: Material Adverse Change
+  ID: f4a5b6c7-d8e9-0123-8901-234567890123
+  Status: No extractions found
+
+  Field: Syndication Details
+  ID: a5b6c7d8-e9f0-1234-9012-345678901234
+  Status: No extractions found
+
+  Field: Agent Bank Details
+  ID: b6c7d8e9-f0a1-2345-0123-456789012345
+  Status: No extractions found
+
+  Field: Interest Payment Dates
+  ID: c7d8e9f0-a1b2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Commitment Reductions
+  ID: d8e9f0a1-b2c3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Mandatory Prepayments
+  ID: e9f0a1b2-c3d4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Use of Proceeds Restrictions
+  ID: f0a1b2c3-d4e5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Compliance Certificates
+  ID: a1b2c3d4-e5f6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Insurance Requirements
+  ID: b2c3d4e5-f6a7-8901-6789-012345678902
+  Status: No extractions found
+
+  Field: Environmental Compliance
+  ID: c3d4e5f6-a7b8-9012-7890-123456789013
+  Status: No extractions found
+
+  Field: ERISA Compliance
+  ID: d4e5f6a7-b8c9-0123-8901-234567890124
+  Status: No extractions found
+
+  Field: Tax Matters
+  ID: e5f6a7b8-c9d0-1234-9012-345678901235
+  Status: No extractions found
+
+  Field: Margin Stock
+  ID: f6a7b8c9-d0e1-2345-0123-456789012346
+  Status: No extractions found
+
+  Field: Investment Company Act
+  ID: a7b8c9d0-e1f2-3456-1234-567890123457
+  Status: No extractions found
+
+  Field: Public Utility Holding Company
+  ID: b8c9d0e1-f2a3-4567-2345-678901234568
+  Status: No extractions found
+
+  Field: Sanctions and Anti-Corruption
+  ID: c9d0e1f2-a3b4-5678-3456-789012345679
+  Status: No extractions found
+
+  Field: Beneficial Ownership Certification
+  ID: d0e1f2a3-b4c5-6789-4567-890123456780
+  Status: No extractions found
+
+  Field: Patriot Act Compliance
+  ID: e1f2a3b4-c5d6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Withholding Taxes
+  ID: f2a3b4c5-d6e7-8901-6789-012345678902
+  Status: No extractions found
+
+  Field: Increased Costs
+  ID: a3b4c5d6-e7f8-9012-7890-123456789013
+  Status: No extractions found
+
+  Field: Illegality
+  ID: b4c5d6e7-f8a9-0123-8901-234567890124
+  Status: No extractions found
+
+  Field: Break Funding Payments
+  ID: c5d6e7f8-a9b0-1234-9012-345678901235
+  Status: No extractions found
+
+  Field: Mitigation Obligations
+  ID: d6e7f8a9-b0c1-2345-0123-456789012346
+  Status: No extractions found
+
+  Field: Replacement of Lenders
+  ID: e7f8a9b0-c1d2-3456-1234-567890123457
+  Status: No extractions found
+
+  Field: Survival of Obligations
+  ID: f8a9b0c1-d2e3-4567-2345-678901234568
+  Status: No extractions found
+
+  Field: Severability
+  ID: a9b0c1d2-e3f4-5678-3456-789012345679
+  Status: No extractions found
+
+  Field: Integration
+  ID: b0c1d2e3-f4a5-6789-4567-890123456780
+  Status: No extractions found
+
+  Field: Counterparts
+  ID: c1d2e3f4-a5b6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Electronic Execution
+  ID: d2e3f4a5-b6c7-8901-6789-012345678902
+  Status: No extractions found
+
+✅ WORKING FIELDS (Sample)
+--------------------------------------------------------------------------------
+  • Can the agreement be assigned?: 12 extraction(s), all working
+
+
+================================================================================
+🔍 TARGET FIELD ANALYSIS
+================================================================================
+Field: Can the agreement be assigned?
+ID: 8d6970e4-1a44-4f4d-8fcf-3140a6634213
+Status: WORKING
+Total extractions: 12
+  - Working: 12
+  - Missing page: 0
+  - Missing bbox: 0
+  - Missing both: 0
+
+Detailed extraction breakdown:
+
+  Extraction 1:
+    Text: Section 5.11, such assignment will result in a reduction in such compensation or payments thereafter
+    Page: 158
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 1674, 'left': 559, 'bottom': 2819, 'right': 1753}
+    Spans count: 1
+    Confidence: 0.8761
+    Status: working
+
+  Extraction 2:
+    Text: into any similar combination with (including by division), or enter into any Asset Disposition of al
+    Page: 218
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 1568, 'left': 408, 'bottom': 1769, 'right': 1023}
+    Spans count: 1
+    Confidence: 0.7370
+    Status: working
+
+  Extraction 3:
+    Text: (c) any Subsidiary may dispose of all or substantially all of its assets (upon
+    Page: 218
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 2727, 'left': 558, 'bottom': 2769, 'right': 2143}
+    Spans count: 1
+    Confidence: 0.8077
+    Status: working
+
+  Extraction 4:
+    Text: (b) the sale, transfer or other disposition of assets to any Credit Party pursuant to any other tran
+    Page: 220
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 1821, 'left': 558, 'bottom': 1916, 'right': 1423}
+    Spans count: 1
+    Confidence: 0.6904
+    Status: working
+
+  Extraction 5:
+    Text: Subsidiaries is the “defaulting party” (or substantially equivalent term, but, for the avoidance of 
+    Page: 236
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 302, 'left': 409, 'bottom': 610, 'right': 1858}
+    Spans count: 1
+    Confidence: 0.6350
+    Status: working
+
+  Extraction 6:
+    Text: Administrative Agent or, at the option of the Administrative Agent, the Administrative Agent’s appli
+    Page: 262
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 780, 'left': 407, 'bottom': 1194, 'right': 1230}
+    Spans count: 1
+    Confidence: 0.6427
+    Status: working
+
+  Extraction 7:
+    Text: (i) consent to the assignment or transfer by any Credit Party of such Credit Party’s rights and obli
+    Page: 270
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 2671, 'left': 558, 'bottom': 3133, 'right': 692}
+    Spans count: 1
+    Confidence: 0.7600
+    Status: working
+
+  Extraction 8:
+    Text: binding upon and inure to the benefit of the parties hereto and their respective successors and assi
+    Page: 282
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 1143, 'left': 406, 'bottom': 1610, 'right': 1832}
+    Spans count: 1
+    Confidence: 0.9928
+    Status: working
+
+  Extraction 9:
+    Text: (b) Assignments by Lenders. Any Lender may at any time assign to one or more assignees all or a port
+    Page: 282
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 1990, 'left': 558, 'bottom': 2822, 'right': 1028}
+    Spans count: 1
+    Confidence: 0.7251
+    Status: working
+
+  Extraction 10:
+    Text: Each partial assignment shall be made as an assignment of a proportionate part of all the assigning 
+    Page: 284
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 671, 'left': 1324, 'bottom': 2979, 'right': 2142}
+    Spans count: 1
+    Confidence: 0.8751
+    Status: working
+
+  Extraction 11:
+    Text: Notwithstanding the foregoing, in the event that any assignment of rights and obligations of any Def
+    Page: 286
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 887, 'left': 1443, 'bottom': 2147, 'right': 2078}
+    Spans count: 1
+    Confidence: 0.8957
+    Status: working
+
+  Extraction 12:
+    Text: Any Lender may at any time pledge or assign a security interest in all or any portion of its rights 
+    Page: 288
+    Has bbox: True
+    Has spans with bbox: True
+    Bbox sample: {'top': 2737, 'left': 1049, 'bottom': 3035, 'right': 531}
+    Spans count: 1
+    Confidence: 0.8584
+    Status: working
+
+================================================================================
+💡 RECOMMENDATIONS
+================================================================================
+✅ All fields are working correctly!
+
+================================================================================
+📄 Analyzing Document: BuzzFeed Agreement.pdf
+   Document ID: e37f9df8
+   Extraction ID: 8
+--------------------------------------------------------------------------------
+
+📊 Found 14 fields in extraction results
+
+📊 SUMMARY
+================================================================================
+✅ Working (has page & bbox):        1 fields
+⚠️  Missing page only:                0 fields
+⚠️  Missing bbox only:                0 fields
+❌ Missing both page & bbox:         0 fields
+📭 No extractions at all:            53 fields
+📝 Total fields analyzed:            54 fields
+
+📭 NO EXTRACTIONS
+--------------------------------------------------------------------------------
+
+  Field: Parties Involved
+  ID: f3e7d8c2-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+  Status: No extractions found
+
+  Field: Effective Date
+  ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  Status: No extractions found
+
+  Field: Facility Amount
+  ID: b2c3d4e5-f6a7-8901-bcde-f12345678901
+  Status: No extractions found
+
+  Field: Currency
+  ID: c3d4e5f6-a7b8-9012-cdef-123456789012
+  Status: No extractions found
+
+  Field: Interest Rate
+  ID: d4e5f6a7-b8c9-0123-def1-234567890123
+  Status: No extractions found
+
+  Field: Maturity Date
+  ID: e5f6a7b8-c9d0-1234-ef12-345678901234
+  Status: No extractions found
+
+  Field: Purpose of Loan
+  ID: f6a7b8c9-d0e1-2345-f123-456789012345
+  Status: No extractions found
+
+  Field: Repayment Terms
+  ID: a7b8c9d0-e1f2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Prepayment Provisions
+  ID: b8c9d0e1-f2a3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Security/Collateral
+  ID: c9d0e1f2-a3b4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Guarantees
+  ID: d0e1f2a3-b4c5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Financial Covenants
+  ID: e1f2a3b4-c5d6-7890-5678-901234567890
+  Status: No extractions found
+
+  Field: Negative Covenants
+  ID: f2a3b4c5-d6e7-8901-6789-012345678901
+  Status: No extractions found
+
+  Field: Affirmative Covenants
+  ID: a3b4c5d6-e7f8-9012-7890-123456789012
+  Status: No extractions found
+
+  Field: Events of Default
+  ID: b4c5d6e7-f8a9-0123-8901-234567890123
+  Status: No extractions found
+
+  Field: Conditions Precedent
+  ID: c5d6e7f8-a9b0-1234-9012-345678901234
+  Status: No extractions found
+
+  Field: Representations and Warranties
+  ID: d6e7f8a9-b0c1-2345-0123-456789012345
+  Status: No extractions found
+
+  Field: Fees and Expenses
+  ID: e7f8a9b0-c1d2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Amendments and Waivers
+  ID: f8a9b0c1-d2e3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Assignment and Transfer
+  ID: a9b0c1d2-e3f4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Governing Law
+  ID: b0c1d2e3-f4a5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Jurisdiction
+  ID: c1d2e3f4-a5b6-7890-5678-901234567890
+  Status: No extractions found
+
+  Field: Notice Provisions
+  ID: d2e3f4a5-b6c7-8901-6789-012345678901
+  Status: No extractions found
+
+  Field: Confidentiality
+  ID: e3f4a5b6-c7d8-9012-7890-123456789012
+  Status: No extractions found
+
+  Field: Material Adverse Change
+  ID: f4a5b6c7-d8e9-0123-8901-234567890123
+  Status: No extractions found
+
+  Field: Syndication Details
+  ID: a5b6c7d8-e9f0-1234-9012-345678901234
+  Status: No extractions found
+
+  Field: Agent Bank Details
+  ID: b6c7d8e9-f0a1-2345-0123-456789012345
+  Status: No extractions found
+
+  Field: Interest Payment Dates
+  ID: c7d8e9f0-a1b2-3456-1234-567890123456
+  Status: No extractions found
+
+  Field: Commitment Reductions
+  ID: d8e9f0a1-b2c3-4567-2345-678901234567
+  Status: No extractions found
+
+  Field: Mandatory Prepayments
+  ID: e9f0a1b2-c3d4-5678-3456-789012345678
+  Status: No extractions found
+
+  Field: Use of Proceeds Restrictions
+  ID: f0a1b2c3-d4e5-6789-4567-890123456789
+  Status: No extractions found
+
+  Field: Compliance Certificates
+  ID: a1b2c3d4-e5f6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Insurance Requirements
+  ID: b2c3d4e5-f6a7-8901-6789-012345678902
+  Status: No extractions found
+
+  Field: Environmental Compliance
+  ID: c3d4e5f6-a7b8-9012-7890-123456789013
+  Status: No extractions found
+
+  Field: ERISA Compliance
+  ID: d4e5f6a7-b8c9-0123-8901-234567890124
+  Status: No extractions found
+
+  Field: Tax Matters
+  ID: e5f6a7b8-c9d0-1234-9012-345678901235
+  Status: No extractions found
+
+  Field: Margin Stock
+  ID: f6a7b8c9-d0e1-2345-0123-456789012346
+  Status: No extractions found
+
+  Field: Investment Company Act
+  ID: a7b8c9d0-e1f2-3456-1234-567890123457
+  Status: No extractions found
+
+  Field: Public Utility Holding Company
+  ID: b8c9d0e1-f2a3-4567-2345-678901234568
+  Status: No extractions found
+
+  Field: Sanctions and Anti-Corruption
+  ID: c9d0e1f2-a3b4-5678-3456-789012345679
+  Status: No extractions found
+
+  Field: Beneficial Ownership Certification
+  ID: d0e1f2a3-b4c5-6789-4567-890123456780
+  Status: No extractions found
+
+  Field: Patriot Act Compliance
+  ID: e1f2a3b4-c5d6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Withholding Taxes
+  ID: f2a3b4c5-d6e7-8901-6789-012345678902
+  Status: No extractions found
+
+  Field: Increased Costs
+  ID: a3b4c5d6-e7f8-9012-7890-123456789013
+  Status: No extractions found
+
+  Field: Illegality
+  ID: b4c5d6e7-f8a9-0123-8901-234567890124
+  Status: No extractions found
+
+  Field: Break Funding Payments
+  ID: c5d6e7f8-a9b0-1234-9012-345678901235
+  Status: No extractions found
+
+  Field: Mitigation Obligations
+  ID: d6e7f8a9-b0c1-2345-0123-456789012346
+  Status: No extractions found
+
+  Field: Replacement of Lenders
+  ID: e7f8a9b0-c1d2-3456-1234-567890123457
+  Status: No extractions found
+
+  Field: Survival of Obligations
+  ID: f8a9b0c1-d2e3-4567-2345-678901234568
+  Status: No extractions found
+
+  Field: Severability
+  ID: a9b0c1d2-e3f4-5678-3456-789012345679
+  Status: No extractions found
+
+  Field: Integration
+  ID: b0c1d2e3-f4a5-6789-4567-890123456780
+  Status: No extractions found
+
+  Field: Counterparts
+  ID: c1d2e3f4-a5b6-7890-5678-901234567891
+  Status: No extractions found
+
+  Field: Electronic Execution
+  ID: d2e3f4a5-b6c7-8901-6789-012345678902
+  Status: No extractions found
+
+✅ WORKING FIELDS (Sample)
+--------------------------------------------------------------------------------
+  • Can the agreement be assigned?: 6 extraction(s), all working
+
+
+================================================================================
+🔍 TARGET FIELD ANALYSIS
+================================================================================
+Field: Can the agreement be assigned?
+ID: 8d6970e4-1a44-4f4d-8fcf-3140a6634213
+Status: WORKING
+Total extractions: 6
+  - Working: 6
+  - Missing page: 0
+  - Missing bbox: 0
+  - Missing both: 0
+
+Detailed extraction breakdown:
+
+  Extraction 1:
+    Text: (xi) if such Receivable cannot or may not be transferred, assigned or pledged;
+    Page: 33
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 1768, 'left': 443, 'bottom': 1814, 'right': 2029}
+    Spans count: 1
+    Confidence: 0.6521
+    Status: working
+
+  Extraction 2:
+    Text: (b) any Subsidiary may sell all or substantially all of its assets (upon voluntary liquidation or ot
+    Page: 115
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 2271, 'left': 293, 'bottom': 2417, 'right': 889}
+    Spans count: 1
+    Confidence: 0.6096
+    Status: working
+
+  Extraction 3:
+    Text: or (c) consolidate with or merge with or into, or Dispose all or substantially all its assets to, an
+    Page: 119
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 2221, 'left': 797, 'bottom': 2317, 'right': 629}
+    Spans count: 1
+    Confidence: 0.6982
+    Status: working
+
+  Extraction 4:
+    Text: (a) Borrower Assignment. No Borrower shall assign this Agreement or any of its rights or obligations
+    Page: 144
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 921, 'left': 293, 'bottom': 2367, 'right': 904}
+    Spans count: 1
+    Confidence: 0.9956
+    Status: working
+
+  Extraction 5:
+    Text: Any Lender may at any time pledge or assign a security interest in all or any portion of its rights 
+    Page: 148
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 2021, 'left': 1065, 'bottom': 2317, 'right': 479}
+    Spans count: 1
+    Confidence: 0.8381
+    Status: working
+
+  Extraction 6:
+    Text: (f) subject to an agreement containing provisions substantially the same as this Section, to any ass
+    Page: 153
+    Has bbox: False
+    Has spans with bbox: True
+    Bbox sample: {'top': 2121, 'left': 1601, 'bottom': 2317, 'right': 1889}
+    Spans count: 1
+    Confidence: 0.6518
+    Status: working
+
+================================================================================
+💡 RECOMMENDATIONS
+================================================================================
+✅ All fields are working correctly!
+
+================================================================================

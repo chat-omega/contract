@@ -1,0 +1,330 @@
+{
+  "config": {
+    "configFile": "/home/ubuntu/contract1/omega-workflow/react-app/playwright.config.ts",
+    "rootDir": "/home/ubuntu/contract1/omega-workflow/react-app/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "test-results/html-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/ubuntu/contract1/omega-workflow/react-app/test-results/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/ubuntu/contract1/omega-workflow/react-app/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "extraction-click-navigation-fix.spec.ts",
+      "file": "extraction-click-navigation-fix.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Extraction Click Navigation Fix",
+          "file": "extraction-click-navigation-fix.spec.ts",
+          "line": 25,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show complete diagnostic log chain when clicking extraction",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "04de04e993e1ede9077d-28e33852f4829cd6af54",
+              "file": "extraction-click-navigation-fix.spec.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "should not show NAVIGATION BLOCKED errors for valid extractions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "04de04e993e1ede9077d-2cc27a360ad36ee6e64b",
+              "file": "extraction-click-navigation-fix.spec.ts",
+              "line": 286,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pdf-extraction-navigation.spec.ts",
+      "file": "pdf-extraction-navigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PDF Extraction Navigation & Highlighting Tests",
+          "file": "pdf-extraction-navigation.spec.ts",
+          "line": 116,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Scenario 1: Initial document load - should load successfully with minimal errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-ca9107db5c714269aae0",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 121,
+              "column": 3
+            },
+            {
+              "title": "Scenario 2: Click extraction #2 from Parties field - should scroll and highlight",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-19423cc00eb6d3a08f55",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 173,
+              "column": 3
+            },
+            {
+              "title": "Scenario 3: Click extraction #15 from Parties field - should scroll and highlight",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-f8d1511b75248f858dd7",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "Scenario 4: Rapid clicking between extractions - should handle gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-d89f426acabc383adb0f",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 284,
+              "column": 3
+            },
+            {
+              "title": "Scenario 5: Verify only clicked extraction is highlighted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-fff493c40c0e31acdae1",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 337,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Console Log Deep Analysis",
+          "file": "pdf-extraction-navigation.spec.ts",
+          "line": 381,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Generate comprehensive console log report",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1520f52c6209f407cbbf-b0bf448e4fb66c7bab3a",
+              "file": "pdf-extraction-navigation.spec.ts",
+              "line": 386,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pdf-highlighting-verify.spec.ts",
+      "file": "pdf-highlighting-verify.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PDF Highlighting - Verify Debug Rectangle and Coordinates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "5a7468e454d879bd83f8-c8d777991e61cad29dd3",
+          "file": "pdf-highlighting-verify.spec.ts",
+          "line": 19,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "pdf-navigation-simple.spec.ts",
+      "file": "pdf-navigation-simple.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "PDF Extraction Navigation - Full Test with Console Analysis",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4e97d45d671376e18503-4539f76301d2dae335de",
+          "file": "pdf-navigation-simple.spec.ts",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-28T02:39:27.086Z",
+    "duration": 1175.232,
+    "expected": 0,
+    "skipped": 10,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

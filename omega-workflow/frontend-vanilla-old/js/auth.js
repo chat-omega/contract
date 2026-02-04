@@ -292,9 +292,9 @@ class AuthManager {
 
             console.log('Login result:', result);
 
-            if (result.success) {
+            if (result.access_token) {
                 // Store authentication data
-                this.setToken(result.tokens.accessToken);
+                this.setToken(result.access_token);
                 this.setUserData(result.user);
 
                 console.log('Login successful, stored token and user data');

@@ -607,10 +607,14 @@ class ZuvaClient:
                         confidence = first_span['score']
 
                 # Extract bbox from spans if not at top level
-                # Zuva returns bbox in spans[0].bboxes[0].bounds format
+                # Zuva returns bbox in multiple possible locations:
+                # 1. spans[0].bboxes[0].bounds (array of bound objects)
+                # 2. spans[0].bounds (direct bound object)
                 bbox = extraction.get('bbox')
                 if bbox is None and extraction.get('spans'):
                     first_span = extraction.get('spans', [])[0] if extraction.get('spans') else None
+
+                    # Try location 1: spans[0].bboxes[0].bounds (array)
                     if first_span and first_span.get('bboxes'):
                         first_bbox_obj = first_span['bboxes'][0] if first_span['bboxes'] else None
                         if first_bbox_obj and first_bbox_obj.get('bounds'):
@@ -626,9 +630,21 @@ class ZuvaClient:
                                     bound.get('top')
                                 ]
 
+                    # Try location 2: spans[0].bounds (fallback - direct object)
+                    if bbox is None and first_span and first_span.get('bounds'):
+                        bound = first_span['bounds']
+                        if isinstance(bound, dict):
+                            # Convert to [left, bottom, right, top] format for PDF coordinates
+                            bbox = [
+                                bound.get('left'),
+                                bound.get('bottom'),
+                                bound.get('right'),
+                                bound.get('top')
+                            ]
+
                 field_results.append({
                     'text': extraction.get('text', ''),
-                    'page': page + 1 if page is not None else None,  # Convert 0-indexed to 1-indexed
+                    'page': page,  # Zuva already returns 1-indexed pages (page 1 = first page)
                     'bbox': bbox,
                     'confidence': confidence,
                     'spans': extraction.get('spans', [])
